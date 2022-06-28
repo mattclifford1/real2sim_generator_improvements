@@ -34,12 +34,13 @@ class gan_tester():
     def __init__(self, gan_model_dir, image_size=[128, 128]):
         self.gan_model_dir = gan_model_dir
         self.image_size = image_size
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.init_generator()
         self.init_discrim()
 
     def init_generator(self):
         self.generator = GeneratorUNet(in_channels=1, out_channels=1)
-        self.generator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_generator.pth')))
+        self.generator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_generator.pth'), map_location=torch.device(self.device)))
         self.generator = model_to_device(self.generator)
         self.generator.eval()
         # get image io helper
@@ -47,7 +48,7 @@ class gan_tester():
 
     def init_discrim(self):
         self.discriminator = Discriminator(in_channels=1)
-        self.discriminator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_discriminator.pth')))
+        self.discriminator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_discriminator.pth'), map_location=torch.device(self.device)))
         self.discriminator = model_to_device(self.discriminator)
         self.discriminator.eval()
 
