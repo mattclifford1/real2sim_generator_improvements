@@ -1,3 +1,4 @@
+
 initial experiments:
 
 higher MSE with wrong model,
@@ -10,3 +11,10 @@ todo:
 loop over all models/test image sets
 
 plot somehow?
+
+
+
+
+dev:
+reqs.txt
+env: sim2real -> make new one
