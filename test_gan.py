@@ -74,10 +74,11 @@ class gan_tester():
         # print('Discriminator mean of all patches: ', discrim_avg_score)
         return MSE, discrim_avg_score
 
-
-    def loop_all_params(self):
+    def get_all_model_weights(self):
+        weights = {}
         for name, param in self.generator.named_parameters():
-            print(name, ': ', param.shape)
+            weights[name] = param
+        return weights
 
 
 def get_mse(generator, im_real_pt, image_sim, ims_io):
@@ -113,13 +114,16 @@ if __name__ == '__main__':
     # gan_model_dir = '../models/sim2real/alex/trained_gans/[edge_2d]/128x128_[shear]_250epochs'
     # gan_model_dir = '../models/sim2real/alex/trained_gans/[surface_3d]/128x128_[shear]_250epochs'
     tester = gan_tester(gan_model_dir)
-    # tester.loop_all_params()
+    weights = tester.get_all_model_weights()
+    for name in weights.keys():
+        print(name, ': ', weights[name].mean())
 
     real_images_dir = '../data/Bourne/tactip/real/edge_2d/tap/csv_val/images'
     sim_images_dir = '../data/Bourne/tactip/sim/edge_2d/tap/128x128/csv_val/images'
 
     MSEs = []
     discrim_scores = []
+    i = 0
     for image in tqdm(get_all_test_ims(real_images_dir)):
         # get image pair
         test_image_real = os.path.join(real_images_dir, image)
@@ -128,5 +132,9 @@ if __name__ == '__main__':
         MSE, discrim_avg_score = tester.get_info(test_image_real, test_image_sim)
         MSEs.append(MSE)
         discrim_scores.append(discrim_avg_score)
+
+        i+=1
+        if i == 5:
+            break
     print(np.mean(MSEs))
     print(np.mean(discrim_scores))
