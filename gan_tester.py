@@ -99,7 +99,7 @@ def get_all_test_ims(dir, ext='.png'):
     return ims
 
 
-def run(gan_model_dir, real_images_dir, sim_images_dir):
+def run(gan_model_dir, real_images_dir, sim_images_dir, dev=False):
     tester = gan_tester(gan_model_dir)
     weights = tester.get_all_model_weights()
     for name in weights.keys():
@@ -118,7 +118,7 @@ def run(gan_model_dir, real_images_dir, sim_images_dir):
         discrim_scores.append(discrim_avg_score)
 
         i+=1
-        if i == 5:
+        if i == 5 and dev == True:
             break
     return MSEs, discrim_scores
 
@@ -142,6 +142,6 @@ if __name__ == '__main__':
     real_images_dir = '../data/Bourne/tactip/real/edge_2d/tap/csv_val/images'
     sim_images_dir = '../data/Bourne/tactip/sim/edge_2d/tap/128x128/csv_val/images'
 
-    MSEs, discrim_scores = run(gan_model_dir, real_images_dir, sim_images_dir)
+    MSEs, discrim_scores = run(gan_model_dir, real_images_dir, sim_images_dir, dev=True)
     print(np.mean(MSEs))
     print(np.mean(discrim_scores))
