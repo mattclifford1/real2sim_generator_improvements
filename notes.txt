@@ -8,9 +8,11 @@ but the average of all patches from discriminator seems to be the same
 
 todo:
 
+
+
 loop over all models/test image sets
 
-plot somehow?
+plot somehow? 
 
 
 

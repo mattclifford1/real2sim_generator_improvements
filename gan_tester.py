@@ -1,6 +1,6 @@
 '''
 Script to test UNet against the validation set and a given discriminator.
-Code adapted from Alex Churh's tactile_gym_sim2real repo
+Code adapted from Alex Church's tactile_gym_sim2real repo
 
 Author: Matt Clifford
 Email: matt.clifford@bristol.ac.uk
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import numpy as np
 
-from image_transforms import GAN_io
+from utils.image_transforms import GAN_io
 from gan_models.models_128 import GeneratorUNet, Discriminator
 
 
@@ -99,27 +99,11 @@ def get_all_test_ims(dir, ext='.png'):
     return ims
 
 
-if __name__ == '__main__':
-    '''
-    input:
-    - test dataset
-    - generator
-    - discriminator
-    output:
-    - test score (MSE)
-    - discriminator score (error etc.)
-    '''
-    gan_model_dir = 'no_git_data/128x128_tap_250epochs/'
-    gan_model_dir = '../models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs'
-    # gan_model_dir = '../models/sim2real/alex/trained_gans/[edge_2d]/128x128_[shear]_250epochs'
-    # gan_model_dir = '../models/sim2real/alex/trained_gans/[surface_3d]/128x128_[shear]_250epochs'
+def run(gan_model_dir, real_images_dir, sim_images_dir):
     tester = gan_tester(gan_model_dir)
     weights = tester.get_all_model_weights()
     for name in weights.keys():
         print(name, ': ', weights[name].mean())
-
-    real_images_dir = '../data/Bourne/tactip/real/edge_2d/tap/csv_val/images'
-    sim_images_dir = '../data/Bourne/tactip/sim/edge_2d/tap/128x128/csv_val/images'
 
     MSEs = []
     discrim_scores = []
@@ -138,3 +122,25 @@ if __name__ == '__main__':
             break
     print(np.mean(MSEs))
     print(np.mean(discrim_scores))
+
+
+if __name__ == '__main__':
+    '''
+    input:
+    - test dataset
+    - generator
+    - discriminator
+    output:
+    - test score (MSE)
+    - discriminator score (error etc.)
+    '''
+    gan_model_dir = 'no_git_data/128x128_tap_250epochs/'
+    gan_model_dir = '../models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs'
+    # gan_model_dir = '../models/sim2real/alex/trained_gans/[edge_2d]/128x128_[shear]_250epochs'
+    # gan_model_dir = '../models/sim2real/alex/trained_gans/[surface_3d]/128x128_[shear]_250epochs'
+
+
+    real_images_dir = '../data/Bourne/tactip/real/edge_2d/tap/csv_val/images'
+    sim_images_dir = '../data/Bourne/tactip/sim/edge_2d/tap/128x128/csv_val/images'
+
+    run(gan_model_dir, real_images_dir, sim_images_dir)
