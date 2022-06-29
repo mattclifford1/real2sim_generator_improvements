@@ -120,8 +120,7 @@ def run(gan_model_dir, real_images_dir, sim_images_dir):
         i+=1
         if i == 5:
             break
-    print(np.mean(MSEs))
-    print(np.mean(discrim_scores))
+    return MSEs, discrim_scores
 
 
 if __name__ == '__main__':
@@ -143,4 +142,6 @@ if __name__ == '__main__':
     real_images_dir = '../data/Bourne/tactip/real/edge_2d/tap/csv_val/images'
     sim_images_dir = '../data/Bourne/tactip/sim/edge_2d/tap/128x128/csv_val/images'
 
-    run(gan_model_dir, real_images_dir, sim_images_dir)
+    MSEs, discrim_scores = run(gan_model_dir, real_images_dir, sim_images_dir)
+    print(np.mean(MSEs))
+    print(np.mean(discrim_scores))
