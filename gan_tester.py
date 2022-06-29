@@ -102,13 +102,13 @@ def get_all_test_ims(dir, ext='.png'):
 def run(gan_model_dir, real_images_dir, sim_images_dir, dev=False):
     tester = gan_tester(gan_model_dir)
     weights = tester.get_all_model_weights()
-    for name in weights.keys():
-        print(name, ': ', weights[name].mean())
+    # for name in weights.keys():
+    #     print(name, ': ', weights[name].mean())
 
     MSEs = []
     discrim_scores = []
     i = 0
-    for image in tqdm(get_all_test_ims(real_images_dir)):
+    for image in tqdm(get_all_test_ims(real_images_dir), desc="All images", leave=False):
         # get image pair
         test_image_real = os.path.join(real_images_dir, image)
         test_image_sim = os.path.join(sim_images_dir, image)
