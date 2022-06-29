@@ -3,3 +3,4 @@ tqdm
 numpy
 opencv-python
 scipy
+matplotlib
