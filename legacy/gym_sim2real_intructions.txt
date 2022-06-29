@@ -1,0 +1,6 @@
+tactile_gym_sim2real_dev
+
+training GAN -> tactile_gym_sim2real/pix2pix/pix2pix.py
+testing  GAN -> tactile_gym_sim2real/online_experiments/test_gan.py
+
+data collection -> tactile_gym_sim2real/data_collection
