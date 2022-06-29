@@ -10,10 +10,10 @@ import os
 from skimage import io
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import numpy as np
 
-from gan_net import GAN_io
-from image_transforms import *
-from tactile_gym_sim2real.pix2pix.gan_models.models_128 import GeneratorUNet, Discriminator
+from image_transforms import GAN_io
+from gan_models.models_128 import GeneratorUNet, Discriminator
 
 
 def show_ims(ims):
