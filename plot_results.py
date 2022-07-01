@@ -29,17 +29,22 @@ if __name__ == '__main__':
     for plot in plot_order:
         group_data = [plot]
         exp_order = []
+        plots = 0
         for result in results:
             if result[groupby] == plot:
                 group_data.append(result['MSE on Validation'])
                 exp_order.append(result[inner_groupby])
+                plots += 1
+            if plots == 4:  # hack to not plot repeated resutls
+                break
         print(exp_order)  # make sure all in right order
         plot_data.append(group_data)
     plot_df = pd.DataFrame(plot_data, columns=[groupby]+exp_order)
 
 
     # plot grouped bar chart
-    df.plot(x=groupby,
+    plot_df.plot(x=groupby,
             kind='bar',
             stacked=False,
             title='Grouped Bar Graph with differing '+inner_groupby)
+    plt.show()
