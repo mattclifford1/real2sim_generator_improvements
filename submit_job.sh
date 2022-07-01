@@ -8,5 +8,6 @@
 
 # #SBATCH --gres=gpu:2
 # cd /user/home/mc15445/summer-project/real2sim_multitask
-srun ./bc4.sh
+srun conda activate /user/work/mc15445/conda_envs/multi_task
+srun python run_all.py --dir /user/work/mc15445/summer-project
 wait
