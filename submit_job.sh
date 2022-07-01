@@ -5,8 +5,8 @@
 #SBATCH --time=0:0:10
 #SBATCH --mem=100M
 #SBATCH --job-name=multi_task
-#SBATCH -e ~/stderr.txt
-#SBATCH -o ~/stdout.txt
+#SBATCH -e stderr.txt
+#SBATCH -o stdout.txt
 
 # #SBATCH --gres=gpu:2
 # cd /user/home/mc15445/summer-project/real2sim_multitask
