@@ -19,7 +19,7 @@
 # conda activate /user/work/mc15445/conda_envs/multi_task
 
 module load languages/anaconda3/2020-3.8.5
-module load libs/cudnn/10.1-cuda-10.0
+# module load libs/cudnn/10.1-cuda-10.0
 module load libs/cuda/10.2-gcc-5.4.0-2.26
 # module load languages/anaconda3/2019.10-3.7.4-tflow-2.1.0
 echo 'Hello'
