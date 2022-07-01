@@ -31,8 +31,9 @@ def model_to_device(model):
     return model
 
 class gan_tester():
-    def __init__(self, gan_model_dir, image_size=[128, 128]):
-        self.gan_model_dir = gan_model_dir
+    def __init__(self, gen_model_dir, discrim_model_dir, image_size=[128, 128]):
+        self.gen_model_dir = gen_model_dir
+        self.discrim_model_dir = discrim_model_dir
         self.image_size = image_size
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.init_generator()
@@ -40,15 +41,15 @@ class gan_tester():
 
     def init_generator(self):
         self.generator = GeneratorUNet(in_channels=1, out_channels=1)
-        self.generator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_generator.pth'), map_location=torch.device(self.device)))
+        self.generator.load_state_dict(torch.load(os.path.join(self.gen_model_dir, 'checkpoints/final_generator.pth'), map_location=torch.device(self.device)))
         self.generator = model_to_device(self.generator)
         self.generator.eval()
         # get image io helper
-        self.gen_ims_io = GAN_io(self.gan_model_dir, rl_image_size=self.image_size)
+        self.gen_ims_io = GAN_io(self.gen_model_dir, rl_image_size=self.image_size)
 
     def init_discrim(self):
         self.discriminator = Discriminator(in_channels=1)
-        self.discriminator.load_state_dict(torch.load(os.path.join(self.gan_model_dir, 'checkpoints/final_discriminator.pth'), map_location=torch.device(self.device)))
+        self.discriminator.load_state_dict(torch.load(os.path.join(self.discrim_model_dir, 'checkpoints/final_discriminator.pth'), map_location=torch.device(self.device)))
         self.discriminator = model_to_device(self.discriminator)
         self.discriminator.eval()
 
@@ -99,8 +100,8 @@ def get_all_test_ims(dir, ext='.png'):
     return ims
 
 
-def run(gan_model_dir, real_images_dir, sim_images_dir, dev=False):
-    tester = gan_tester(gan_model_dir)
+def run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, dev=False):
+    tester = gan_tester(gen_model_dir, discrim_model_dir)
     weights = tester.get_all_model_weights()
     # for name in weights.keys():
     #     print(name, ': ', weights[name].mean())
