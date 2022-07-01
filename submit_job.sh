@@ -9,9 +9,9 @@
 # #SBATCH --gres=gpu:2
 # cd /user/home/mc15445/summer-project/real2sim_multitask
 
-module add languages/anaconda3/2021-3.9-bioconda
-module add libs/cuda/10.2-gcc-5.4.0-2.26
-module add tools/git/2.35.1
+module load languages/anaconda3/2021-3.9-bioconda
+module load libs/cuda/10.2-gcc-5.4.0-2.26
+module load tools/git/2.35.1
 conda activate /user/work/mc15445/conda_envs/multi_task
 
 srun python run_all.py --dir /user/work/mc15445/summer-project
