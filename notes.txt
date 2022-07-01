@@ -1,23 +1,20 @@
 
-initial experiments:
+TODO:
+===============================================
+specify the discriminator also when contructing
+get all data back and store for plotting use
 
-higher MSE with wrong model,
-but the average of all patches from discriminator seems to be the same
 
-
-
-todo:
 run loop over all models with all discrims
 run loop over all models with all val sets
 
 
-loop over all models/test image sets
 
-plot somehow?
-
-
+compare model params
+plot somehow -- maybe mag difference of layers/all weights?
 
 
+
+===============================================
 dev:
-reqs.txt
-env: sim2real -> make new one
+env: sim2real -> make new one (done on bc4)
