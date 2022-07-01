@@ -16,7 +16,7 @@ def get_results(ARGS, gen=('edge_2d','tap'), dis=('edge_2d','tap'), data=('edge_
 def save_results(MSE, score, gen, discrim, data, csv_file='results/compare_existing_models.csv'):
     if not os.path.exists(os.path.dirname(csv_file)):
         os.makedirs(os.path.dirname(csv_file))
-    row_name = 'gen_'+str(gen)+'--dis_'+str(discrim)+'--data_'+str(data)
+    row_name = 'GEN_'+gen[0]+'_'+gen[1]+'--DIS_'+discrim[0]+'_'+discrim[1]+'--DATA_'+data[0]+'_'+data[1]
     if os.path.isfile(csv_file): # load existing data frame to add to
         df = pd.read_csv(csv_file, index_col=0)
         data = df.to_dict('index')
