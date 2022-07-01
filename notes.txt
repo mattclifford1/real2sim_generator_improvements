@@ -1,13 +1,11 @@
 
 TODO:
 ===============================================
-specify the discriminator also when contructing
-get all data back and store for plotting use
+save csvs as two: one for discrims/other for diff data
 
 
-run loop over all models with all discrims
-run loop over all models with all val sets
-
+plot validation score differences (bar chart plots)
+plot discrimator score differences
 
 
 compare model params
