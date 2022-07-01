@@ -7,5 +7,5 @@
 #SBATCH --job-name=multi_task
 
 # #SBATCH --gres=gpu:2
-cd /user/home/mc15445/summer-project/real2sim_multitask
+# cd /user/home/mc15445/summer-project/real2sim_multitask
 srun ./bc4.sh
