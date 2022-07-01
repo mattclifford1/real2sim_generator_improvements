@@ -12,9 +12,7 @@
 module add languages/anaconda3/2021-3.9-bioconda
 module add libs/cuda/10.2-gcc-5.4.0-2.26
 module add tools/git/2.35.1
+conda activate /user/work/mc15445/conda_envs/multi_task
 
-srun conda init
-srun source /home/${USER}/.bashrc
-srun conda activate /user/work/mc15445/conda_envs/multi_task
 srun python run_all.py --dir /user/work/mc15445/summer-project
 wait
