@@ -1,7 +1,7 @@
 #!/bin/bash
 git pull
 
-VENV=multi_task
+VENV=/user/work/mc15445/conda_envs/multi_task
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate $VENV
