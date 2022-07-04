@@ -99,12 +99,18 @@ def get_all_test_ims(dir, ext='.png'):
             ims.append(im)
     return ims
 
+def get_weights(gen_model_dir, discrim_model_dir):
+    tester = gan_tester(gen_model_dir, discrim_model_dir)
+    weights = tester.get_all_model_weights()
+    layers = []
+    for name in weights.keys():
+        print(name, ': ', weights[name].mean())
+        layers.append(weights[name])
+    return weights, layers
+
 
 def run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, dev=False):
     tester = gan_tester(gen_model_dir, discrim_model_dir)
-    weights = tester.get_all_model_weights()
-    # for name in weights.keys():
-    #     print(name, ': ', weights[name].mean())
 
     MSEs = []
     discrim_scores = []
