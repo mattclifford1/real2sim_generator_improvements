@@ -17,7 +17,7 @@ def save_results(MSE, score, gen, discrim, data, csv_file='results/compare_exist
     if not os.path.exists(os.path.dirname(csv_file)):
         os.makedirs(os.path.dirname(csv_file))
     # row_name = 'GEN_'+gen[0]+'_'+gen[1]+'--DIS_'+discrim[0]+'_'+discrim[1]+'--DATA_'+data[0]+'_'+data[1]
-    row_name = {'GEN':gen[0][:-3]+'_'+gen[1],
+    row_name = {'GEN':gen[0][:-3]+'_'+gen[1],    #:-3 removes the final _2d or _3d for simplification
                 'DIS':discrim[0][:-3]+'_'+discrim[1],
                 'DATA':data[0][:-3]+'_'+data[1]}
     if os.path.isfile(csv_file): # load existing data frame to add to

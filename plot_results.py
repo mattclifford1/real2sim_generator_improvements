@@ -1,13 +1,15 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import ast
+from argparse import ArgumentParser
 
 class results_reader():
     def __init__(self, csv_file='results/compare_existing_models.csv'):
+        self.csv_file = csv_file
         self.get_df()
 
-    def get_df(self, csv_file='results/compare_existing_models.csv'):
-        self.df = pd.read_csv(csv_file, index_col=0)
+    def get_df(self):
+        self.df = pd.read_csv(self.csv_file, index_col=0)
         self.col_names = self.df.columns.to_list()
 
     def __len__(self):
@@ -21,7 +23,11 @@ class results_reader():
         return deets
 
 if __name__ == '__main__':
-    results = results_reader()
+    parser = ArgumentParser(description='Test data with GAN models')
+    parser.add_argument("--csv", default='results/compare_existing_models.csv', help='path to csv file')
+    ARGS = parser.parse_args()
+
+    results = results_reader(csv_file=ARGS.csv)
     groupby = 'GEN'
     inner_groupby = 'DATA'
     plot_order = ['edge_tap', 'edge_shear', 'surface_tap', 'surface_shear']
