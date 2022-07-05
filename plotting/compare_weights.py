@@ -27,5 +27,7 @@ if __name__ == '__main__':
     discrims = list(itertools.product(task, sampling))
 
     for generator in tqdm(generators, desc="Generators", leave=False):
-        for discrim in tqdm(discrims, desc="Discriminators", leave=False):
-            weights, layers = get_results(ARGS, generator, discrim)
+        weights, layers = get_results(ARGS, generator)
+
+    for discrim in tqdm(discrims, desc="Discriminators", leave=False):
+        weights, layers = get_results(ARGS, generator, discrim)

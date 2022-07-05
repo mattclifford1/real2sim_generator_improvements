@@ -104,7 +104,7 @@ def get_all_test_ims(dir, ext='.png'):
             ims.append(im)
     return ims
 
-def get_weights(gen_model_dir, discrim_model_dir):
+def get_weights(gen_model_dir, discrim_model_dir=None):
     tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir)
     weights = tester.get_all_model_weights()
     layers = []
