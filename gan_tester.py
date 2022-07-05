@@ -7,7 +7,9 @@ Email: matt.clifford@bristol.ac.uk
 '''
 import torch
 import os
-from skimage import io
+from skimage import io, img_as_float
+from skimage.metrics import structural_similarity as SSIM
+from skimage.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import numpy as np
@@ -65,15 +67,14 @@ class gan_tester():
 
     def get_info(self, image_real, image_sim):
         im_real_pt, im_sim_pt, image_sim = self.load_ims(image_real, image_sim)
-        MSE, pred_sim = get_mse(self.generator, im_real_pt, image_sim, self.gen_ims_io)
-        # print('MSE: ', MSE)
+        pred_sim = self.generator(im_real_pt)
+        metrics_dict = get_metrics(pred_sim, im_real_pt, image_sim, self.gen_ims_io)
         # discriminator is conditions the generated/simulated image with the real camera image
-        img_input = torch.cat((pred_sim, im_real_pt), 1)
+        # img_input = torch.cat((pred_sim, im_real_pt), 1)
         discrim_out = self.discriminator(pred_sim, im_real_pt)
-        # print(discrim_out)
         discrim_avg_score = discrim_out.detach().cpu().numpy().mean()
-        # print('Discriminator mean of all patches: ', discrim_avg_score)
-        return MSE, discrim_avg_score
+        metrics_dict['Score on discriminator (accuracy)'] = discrim_avg_score
+        return metrics_dict
 
     def get_all_model_weights(self):
         weights = {}
@@ -82,15 +83,17 @@ class gan_tester():
         return weights
 
 
-def get_mse(generator, im_real_pt, image_sim, ims_io):
-    # get pred_sim
-    pred_sim = generator(im_real_pt)
-    generated_sim_image = ims_io.to_numpy(pred_sim)
-
-    # show_ims([image, processed_real_image, generated_sim_image, image_sim])
-
-    MSE = (generated_sim_image - image_sim).mean()
-    return MSE, pred_sim
+def get_metrics(pred_sim, im_real_pt, image_sim, ims_io):
+    gen_sim_npy = ims_io.to_numpy(pred_sim)
+    # show_ims([image, processed_real_image, gen_sim_npy, image_sim])
+    # MSE = (gen_sim_npy - image_sim).mean()
+    gen_im_flt = img_as_float(gen_sim_npy)
+    sim_im_flt = img_as_float(image_sim)
+    mse = mean_squared_error(sim_im_flt, gen_im_flt)
+    # ssim = SSIM(sim_im_flt, gen_im_flt, data_range=gen_im_flt.max() - gen_im_flt.min())
+    # ssim, diff_image = SSIM(sim_im_flt, gen_im_flt, full=True)
+    ssim = SSIM(sim_im_flt, gen_im_flt)
+    return {'MSE':mse, 'SSIM':ssim}
 
 def get_all_test_ims(dir, ext='.png'):
     ims = []
@@ -112,6 +115,7 @@ def get_weights(gen_model_dir, discrim_model_dir):
 def run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, dev=False):
     tester = gan_tester(gen_model_dir, discrim_model_dir)
 
+    all_metrics = {}
     MSEs = []
     discrim_scores = []
     i = 0
@@ -120,14 +124,18 @@ def run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, dev=F
         test_image_real = os.path.join(real_images_dir, image)
         test_image_sim = os.path.join(sim_images_dir, image)
         # now test image pair
-        MSE, discrim_avg_score = tester.get_info(test_image_real, test_image_sim)
-        MSEs.append(MSE)
-        discrim_scores.append(discrim_avg_score)
-
-        i+=1
-        if i == 5 and dev == True:
+        metrics_dict = tester.get_info(test_image_real, test_image_sim)
+        if i == 0:
+            # init keys
+            for key in metrics_dict.keys():
+                all_metrics[key] = []
+        for key in metrics_dict.keys():
+            all_metrics[key].append(metrics_dict[key])
+        if i == 2 and dev == True:
             break
-    return MSEs, discrim_scores
+        i+=1
+
+    return all_metrics
 
 
 if __name__ == '__main__':

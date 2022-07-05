@@ -25,11 +25,12 @@ class results_reader():
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
     parser.add_argument("--csv", default='results/compare_existing_models.csv', help='path to csv file')
+    parser.add_argument("--metric", default='MSE', help='metric to use: MSE or SSIM')
     ARGS = parser.parse_args()
 
     results = results_reader(csv_file=ARGS.csv)
-    groupby = 'GEN'
-    inner_groupby = 'DATA'
+    groupby = 'Generator'
+    inner_groupby = 'Data'
     plot_order = ['edge_tap', 'edge_shear', 'surface_tap', 'surface_shear']
     plot_data = []
     for plot in plot_order:
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         plots = 0
         for result in results:
             if result[groupby] == plot:
-                group_data.append(result['MSE on Validation'])
+                group_data.append(result[ARGS.metric])
                 exp_order.append(result[inner_groupby])
                 plots += 1
             if plots == 4:  # hack to not plot repeated resutls
@@ -52,5 +53,7 @@ if __name__ == '__main__':
     plot_df.plot(x=groupby,
             kind='bar',
             stacked=False,
-            title='Grouped Bar Graph with differing '+inner_groupby)
+            title='Grouped Bar Graph with Differing '+inner_groupby)
+    plt.xticks(rotation=0)
+    plt.legend(loc='right')
     plt.show()

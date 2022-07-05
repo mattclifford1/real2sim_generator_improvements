@@ -13,19 +13,19 @@ def get_results(ARGS, gen=('edge_2d','tap'), dis=('edge_2d','tap'), data=('edge_
     sim_images_dir = os.path.join(ARGS.dir, 'data/Bourne/tactip/sim/'+data[0]+'/'+data[1]+'/128x128/csv_val/images')
     return run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, ARGS.dev)
 
-def save_results(MSE, score, gen, discrim, data, csv_file='results/compare_existing_models.csv'):
+def save_results(metrics_dict, gen, discrim, data, csv_file='results/compare_existing_models.csv'):
     if not os.path.exists(os.path.dirname(csv_file)):
         os.makedirs(os.path.dirname(csv_file))
     # row_name = 'GEN_'+gen[0]+'_'+gen[1]+'--DIS_'+discrim[0]+'_'+discrim[1]+'--DATA_'+data[0]+'_'+data[1]
-    row_name = {'GEN':gen[0][:-3]+'_'+gen[1],    #:-3 removes the final _2d or _3d for simplification
-                'DIS':discrim[0][:-3]+'_'+discrim[1],
-                'DATA':data[0][:-3]+'_'+data[1]}
+    row_name = {'Generator':gen[0][:-3]+'_'+gen[1],    #:-3 removes the final _2d or _3d for simplification
+                'Discriminator':discrim[0][:-3]+'_'+discrim[1],
+                'Data':data[0][:-3]+'_'+data[1]}
     if os.path.isfile(csv_file): # load existing data frame to add to
         df = pd.read_csv(csv_file, index_col=0)
         data = df.to_dict('index')
     else: # make new dataframe
         data = {}
-    data[str(row_name)] = {'MSE on Validation': MSE, 'Score on discriminator (accuracy)': score}  # add or overwrite new data
+    data[str(row_name)] = metrics_dict  # add or overwrite new data
     df = pd.DataFrame.from_dict(data, orient='index')
     df.to_csv(csv_file, index=True)
 
@@ -49,8 +49,12 @@ if __name__ == '__main__':
     for generator in tqdm(generators, desc="Generators", leave=False):
         for discrim in tqdm(discrims, desc="Discriminators", leave=False):
             for data in tqdm(datas, desc="Data", leave=False):
-                MSEs, discrim_scores = get_results(ARGS, generator, discrim, data)
-                save_results(np.mean(MSEs), np.mean(discrim_scores), generator, discrim, data)
+                metrics_dict = get_results(ARGS, generator, discrim, data)
+                # take average all metrics
+                avg_metrics = {}
+                for key in metrics_dict.keys():
+                    avg_metrics[key] = np.mean(metrics_dict[key])
+                save_results(avg_metrics, generator, discrim, data)
 
 
             # print('Gen:', generator, ' Data: ', data)
