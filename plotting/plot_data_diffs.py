@@ -55,4 +55,10 @@ if __name__ == '__main__':
     plt.ylabel(ARGS.metric)
     plt.xticks(rotation=0)
     plt.legend(loc='right', title=inner_groupby)
-    plt.show()
+    values_with_gen_strs = plot_df.to_numpy()[:, 1:]
+    min_value = values_with_gen_strs.min() - 0.1
+    if min_value > 0:
+        plt.ylim(min_value)
+    save_file = 'results/diff_data_'+ARGS.metric+'.png'
+    plt.savefig(save_file)
+    print('Saved figure to: '+save_file)

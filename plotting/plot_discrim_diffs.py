@@ -55,4 +55,6 @@ if __name__ == '__main__':
     plt.ylabel(ARGS.metric)
     plt.xticks(rotation=0)
     plt.legend(loc='right', title=inner_groupby)
-    plt.show()
+    save_file = 'results/diff_discrim.png'
+    plt.savefig(save_file)
+    print('Saved figure to: '+save_file)
