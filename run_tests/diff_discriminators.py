@@ -1,21 +1,20 @@
 import os
 from argparse import ArgumentParser
-import sys
-sys.path.append('..')
-sys.path.append('.')
+import sys; sys.path.append('..'); sys.path.append('.')
 from gan_tester import run
 import numpy as np
 import itertools
 from tqdm import tqdm
 import pandas as pd
 
-def get_results(ARGS, gen=('edge_2d','tap'), data=('edge_2d', 'tap')):
+def get_results(ARGS, gen=('edge_2d','tap'), dis=('edge_2d','tap'), data=('edge_2d', 'tap')):
     gen_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+gen[0]+']/128x128_['+gen[1]+']_250epochs')
+    discrim_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+dis[0]+']/128x128_['+dis[1]+']_250epochs')
     real_images_dir = os.path.join(ARGS.dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
     sim_images_dir = os.path.join(ARGS.dir, 'data/Bourne/tactip/sim/'+data[0]+'/'+data[1]+'/128x128/csv_val/images')
-    return run(gen_model_dir, real_images_dir, sim_images_dir, ARGS.dev)
+    return run(gen_model_dir, real_images_dir, sim_images_dir, ARGS.dev, discrim_model_dir)
 
-def save_results(metrics_dict, gen, discrim, data, csv_file='results/compare_existing_models.csv'):
+def save_results(metrics_dict, gen, discrim, data, csv_file='results/compare_discriminators.csv'):
     if not os.path.exists(os.path.dirname(csv_file)):
         os.makedirs(os.path.dirname(csv_file))
     # row_name = 'GEN_'+gen[0]+'_'+gen[1]+'--DIS_'+discrim[0]+'_'+discrim[1]+'--DATA_'+data[0]+'_'+data[1]
@@ -45,18 +44,18 @@ if __name__ == '__main__':
     sampling = ['tap', 'shear']
     generators = list(itertools.product(task, sampling))
     discrims = list(itertools.product(task, sampling))
-    datas = list(itertools.product(task, sampling))
+    # datas = list(itertools.product(task, sampling))
 
 
     for generator in tqdm(generators, desc="Generators", leave=False):
         for discrim in tqdm(discrims, desc="Discriminators", leave=False):
-            for data in tqdm(datas, desc="Data", leave=False):
-                metrics_dict = get_results(ARGS, generator, discrim, data)
-                # take average all metrics
-                avg_metrics = {}
-                for key in metrics_dict.keys():
-                    avg_metrics[key] = np.mean(metrics_dict[key])
-                save_results(avg_metrics, generator, discrim, data)
+            # for data in tqdm(datas, desc="Data", leave=False):
+            metrics_dict = get_results(ARGS, generator, discrim, data=generator)
+            # take average all metrics
+            avg_metrics = {}
+            for key in metrics_dict.keys():
+                avg_metrics[key] = np.mean(metrics_dict[key])
+            save_results(avg_metrics, generator, discrim, data=generator)
 
 
             # print('Gen:', generator, ' Data: ', data)

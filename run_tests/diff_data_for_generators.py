@@ -1,8 +1,6 @@
 import os
 from argparse import ArgumentParser
-import sys
-sys.path.append('..')
-sys.path.append('.')
+import sys; sys.path.append('..'); sys.path.append('.')
 from gan_tester import run
 import numpy as np
 import itertools

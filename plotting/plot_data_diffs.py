@@ -50,7 +50,9 @@ if __name__ == '__main__':
     plot_df.plot(x=groupby,
             kind='bar',
             stacked=False,
-            title='Grouped Bar Graph with Differing '+inner_groupby)
+            # title=ARGS.metric+' with Differing '+inner_groupby
+            )
+    plt.ylabel(ARGS.metric)
     plt.xticks(rotation=0)
-    plt.legend(loc='right')
+    plt.legend(loc='right', title=inner_groupby)
     plt.show()

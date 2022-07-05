@@ -1,18 +1,14 @@
 
 TODO:
 ===============================================
-save csvs as two: one for discrims/other for diff data
-
-
-plot validation score differences (bar chart plots)
-plot discrimator score differences
+run both scripts inside run_tests on full datasets
 
 
 compare model params
-plot somehow -- maybe mag difference of layers/all weights?
+  - layer basis
+  - plot somehow -- maybe mag difference of layers/all weights?
 
 
 
-===============================================
-dev:
-env: sim2real -> make new one (done on bc4)
+- retrain script from a model checkpoint
+- transfer tasks models
