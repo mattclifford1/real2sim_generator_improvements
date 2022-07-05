@@ -9,12 +9,11 @@ import itertools
 from tqdm import tqdm
 import pandas as pd
 
-def get_results(ARGS, gen=('edge_2d','tap'), dis=('edge_2d','tap'), data=('edge_2d', 'tap')):
+def get_results(ARGS, gen=('edge_2d','tap'), data=('edge_2d', 'tap')):
     gen_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+gen[0]+']/128x128_['+gen[1]+']_250epochs')
-    discrim_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+dis[0]+']/128x128_['+dis[1]+']_250epochs')
     real_images_dir = os.path.join(ARGS.dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
     sim_images_dir = os.path.join(ARGS.dir, 'data/Bourne/tactip/sim/'+data[0]+'/'+data[1]+'/128x128/csv_val/images')
-    return run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, ARGS.dev)
+    return run(gen_model_dir, real_images_dir, sim_images_dir, ARGS.dev)
 
 def save_results(metrics_dict, gen, discrim, data, csv_file='results/compare_existing_models.csv'):
     if not os.path.exists(os.path.dirname(csv_file)):

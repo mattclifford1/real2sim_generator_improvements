@@ -24,7 +24,7 @@ class results_reader():
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
-    parser.add_argument("--csv", default='results/compare_existing_models.csv', help='path to csv file')
+    parser.add_argument("--csv", default='results/compare_generators_with_data.csv', help='path to csv file')
     parser.add_argument("--metric", default='MSE', help='metric to use: MSE or SSIM')
     ARGS = parser.parse_args()
 
@@ -42,9 +42,6 @@ if __name__ == '__main__':
                 group_data.append(result[ARGS.metric])
                 exp_order.append(result[inner_groupby])
                 plots += 1
-            if plots == 4:  # hack to not plot repeated resutls
-                break
-        print(exp_order)  # make sure all in right order
         plot_data.append(group_data)
     plot_df = pd.DataFrame(plot_data, columns=[groupby]+exp_order)
 

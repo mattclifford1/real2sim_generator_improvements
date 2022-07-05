@@ -33,13 +33,14 @@ def model_to_device(model):
     return model
 
 class gan_tester():
-    def __init__(self, gen_model_dir, discrim_model_dir, image_size=[128, 128]):
+    def __init__(self, gen_model_dir, image_size=[128, 128], discrim_model_dir=None):
         self.gen_model_dir = gen_model_dir
         self.discrim_model_dir = discrim_model_dir
         self.image_size = image_size
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.init_generator()
-        self.init_discrim()
+        if self.discrim_model_dir is not None:
+            self.init_discrim()
 
     def init_generator(self):
         self.generator = GeneratorUNet(in_channels=1, out_channels=1)
@@ -71,9 +72,10 @@ class gan_tester():
         metrics_dict = get_metrics(pred_sim, im_real_pt, image_sim, self.gen_ims_io)
         # discriminator is conditions the generated/simulated image with the real camera image
         # img_input = torch.cat((pred_sim, im_real_pt), 1)
-        discrim_out = self.discriminator(pred_sim, im_real_pt)
-        discrim_avg_score = discrim_out.detach().cpu().numpy().mean()
-        metrics_dict['Score on discriminator (accuracy)'] = discrim_avg_score
+        if self.discrim_model_dir is not None:
+            discrim_out = self.discriminator(pred_sim, im_real_pt)
+            discrim_avg_score = discrim_out.detach().cpu().numpy().mean()
+            metrics_dict['Score on discriminator (accuracy)'] = discrim_avg_score
         return metrics_dict
 
     def get_all_model_weights(self):
@@ -103,7 +105,7 @@ def get_all_test_ims(dir, ext='.png'):
     return ims
 
 def get_weights(gen_model_dir, discrim_model_dir):
-    tester = gan_tester(gen_model_dir, discrim_model_dir)
+    tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir)
     weights = tester.get_all_model_weights()
     layers = []
     for name in weights.keys():
@@ -112,8 +114,8 @@ def get_weights(gen_model_dir, discrim_model_dir):
     return weights, layers
 
 
-def run(gen_model_dir, discrim_model_dir, real_images_dir, sim_images_dir, dev=False):
-    tester = gan_tester(gen_model_dir, discrim_model_dir)
+def run(gen_model_dir, real_images_dir, sim_images_dir, dev=False, discrim_model_dir=None):
+    tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir)
 
     all_metrics = {}
     MSEs = []
