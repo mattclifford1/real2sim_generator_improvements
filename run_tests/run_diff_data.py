@@ -1,5 +1,10 @@
+'''
+Get metrics for all generators on all data types'''
 import os
 from argparse import ArgumentParser
+import sys
+sys.path.append('..')
+sys.path.append('.')
 from gan_tester import run
 import numpy as np
 import itertools
