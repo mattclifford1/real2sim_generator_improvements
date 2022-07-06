@@ -1,12 +1,11 @@
 
 TODO:
 ===============================================
+- get alex's gan trainer copied to this repo
+- allow alex's gan trainer to input other model
+- train transfered models
+- freeze some layers
+- compare training graphs
 
-compare model params
-  - layer basis
-  - plot somehow -- maybe mag difference of layers/all weights?
-
-
-
-- retrain script from a model checkpoint
-- transfer tasks models
+- own trainer (maybe simple supervision)
+- extend to multitask scenario
