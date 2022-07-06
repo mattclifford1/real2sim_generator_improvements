@@ -51,7 +51,7 @@ def plot_avg_nets(networks, nets_weights, groupby):
     plt.savefig(save_file)
     print('Saved figure to: '+save_file)
 
-def plot_layers_diff(networks, nets_weights, comp_net):
+def plot_layers_diff(networks, nets_weights, comp_net, ax=None, y=False):
     plot_data = []
     comparision_name = comp_net[0][:-3]+'_'+comp_net[1]
     nets = []
@@ -72,19 +72,21 @@ def plot_layers_diff(networks, nets_weights, comp_net):
     plot_df = pd.DataFrame(plot_data, columns=exp_order)
     plot_df = plot_df.T
     plot_df.columns = nets
-    print(plot_df)
     # plot grouped bar chart
     plot_df.plot(x=comparision_name,
             kind='bar',
             stacked=False,
-            title=comparision_name
+            title=comparision_name,
+            ax=ax
             )
-    plt.ylabel('Layer mean abs difference')
-    plt.xlabel('Layer Name')
-    plt.legend(loc='right', title='Network')
-    save_file = 'results/weights_diff_layers_'+comparision_name+'.png'
-    plt.savefig(save_file)
-    print('Saved figure to: '+save_file)
+    if ax is None:
+        ax = plt
+    # ax.tick_params('x', labelrotation=45)
+    if y:
+        ax.set_ylabel('Layer mean abs difference')
+    ax.set_xlabel('Layer Name')
+    ax.legend(loc='upper right', title='Network')
+
 
 
 if __name__ == '__main__':
@@ -104,5 +106,18 @@ if __name__ == '__main__':
     for generator in tqdm(generators, desc="Generators", leave=False):
         layers = get_results(ARGS, generator)
         nets_weights[generator] = layers
+
+    fig, ax = plt.subplots(nrows=1, ncols=len(generators))
+    gen = 0
+    y = True
+    for col in ax:
+        plot_layers_diff(generators, nets_weights, generators[gen], ax=col, y=y)
+        gen += 1
+        y = False
+    # fig.tight_layout()
+    fig.set_size_inches(4.5*len(generators),7)
+    save_file = 'results/weights_diff_layers.png'
+    plt.savefig(save_file, dpi=600)
+    print('Saved figure to: '+save_file)
+
     # plot_avg_nets(generators, nets_weights, groupby='Generator')
-    plot_layers_diff(generators, nets_weights, generators[0])
