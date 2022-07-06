@@ -1,8 +1,6 @@
 
 TODO:
 ===============================================
-run both scripts inside run_tests on full datasets
-
 
 compare model params
   - layer basis

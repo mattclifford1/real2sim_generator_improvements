@@ -45,7 +45,6 @@ if __name__ == '__main__':
         plot_data.append(group_data)
     plot_df = pd.DataFrame(plot_data, columns=[groupby]+exp_order)
 
-
     # plot grouped bar chart
     plot_df.plot(x=groupby,
             kind='bar',

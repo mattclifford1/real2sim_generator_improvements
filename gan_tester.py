@@ -107,11 +107,11 @@ def get_all_test_ims(dir, ext='.png'):
 def get_weights(gen_model_dir, discrim_model_dir=None):
     tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir)
     weights = tester.get_all_model_weights()
-    layers = []
+    # convert torch tensors to numpy to easier analysis
+    layers = {}
     for name in weights.keys():
-        print(name, ': ', weights[name].mean())
-        layers.append(weights[name])
-    return weights, layers
+        layers[name] = weights[name].detach().cpu().numpy()
+    return layers
 
 
 def run(gen_model_dir, real_images_dir, sim_images_dir, dev=False, discrim_model_dir=None):
