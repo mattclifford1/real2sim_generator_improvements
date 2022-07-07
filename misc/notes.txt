@@ -19,6 +19,12 @@ training
 own trainer
 ===============================================
 :) own trainer (maybe simple supervision)
+
+- SSIM score for validation
+
+- add more training params (when to save model/validate model etc.)
+- adjust pretrained model name
+
 - train models on GPU
-- log validation images
+
 - extend to multitask scenario

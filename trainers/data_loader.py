@@ -72,6 +72,7 @@ class image_handler():
                  val=False):
         # real_images_dir = os.path.join(dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
         self.dir = os.path.join(base_dir, data)
+        self.task = task
         self.split_type = 'csv_val' if val else 'csv_train'
         self.real_dir = os.path.join(self.dir, 'real', task[0], task[1], self.split_type, 'images')
         self.sim_dir = os.path.join(self.dir, 'sim', task[0], task[1], str(size)+'x'+str(size), self.split_type, 'images')

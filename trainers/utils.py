@@ -13,24 +13,27 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
 class train_saver:
-    def __init__(self, base_dir, model, lr, lr_decay, batch_size, from_scratch=False):
+    def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False):
         self.base_dir = base_dir
+        self.task = task
         self.from_scratch = from_scratch
         if hasattr(model, 'name'):
             self.model_name = model.name
         else:
             self.model_name = model.__class__.__name__
+        self.pretrained_name = model.init_weights_from
         self.lr = lr
         self.lr_decay = lr_decay
         self.batch_size = batch_size
         self.get_save_dir()
 
     def get_save_dir(self):
-        dir = os.path.join(self.base_dir, self.model_name)
-        dir = dir +'_LR_'+str(self.lr)
-        dir = dir +'_decay_'+str(self.lr_decay)
-        self.dir = dir +'_BS_'+str(self.batch_size)
-        if self.from_scratch:
+        dir = os.path.join(self.base_dir, self.task[0], self.task[1], self.pretrained_name)
+        name = 'LR:'+str(self.lr)
+        # name = name +'_decay:'+str(self.lr_decay)
+        name = name +'_BS:'+str(self.batch_size)
+        self.dir = os.path.join(dir, name)
+        if self.from_scratch and os.path.isdir(self.dir):
             shutil.rmtree(self.dir)
         self.models_dir = os.path.join(self.dir, 'models')
         self.ims_dir = os.path.join(self.dir, 'ims')
@@ -57,7 +60,7 @@ class train_saver:
             latest_epoch = max(saves)
             weights_path = os.path.join(self.models_dir, str(latest_epoch)+'.pth')
             model.load_state_dict(torch.load(weights_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
-            print('Loaded pretrained model at epoch: '+str(latest_epoch))
+            print('Loaded previously trained model at epoch: '+str(latest_epoch))
             return latest_epoch
         else:
             return 0 #no pretrained found
@@ -78,7 +81,7 @@ class train_saver:
         f, axarr = plt.subplots(nrows=len(ims), ncols=3)
         axarr[0,0].set_title('real')
         axarr[0,1].set_title('predicted')
-        axarr[0,1].set_title('simulated')
+        axarr[0,2].set_title('simulated')
         for i, im_dict in enumerate(ims):
             axarr[i,0].imshow(im_dict['real'].cpu().detach().numpy(), cmap='gray')
             axarr[i,1].imshow(im_dict['predicted'].cpu().detach().numpy(), cmap='gray')

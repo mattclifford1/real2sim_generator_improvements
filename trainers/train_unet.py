@@ -18,10 +18,11 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 from tqdm import tqdm
 import multiprocessing
+from torchmetrics.functional import structural_similarity_index_measure as SSIM
 
 from trainers.data_loader import image_handler as image_loader
 from trainers.utils import train_saver
-from gan_models.models_128 import GeneratorUNet, weights_init_normal
+from gan_models.models_128 import GeneratorUNet, weights_init_normal, weights_init_pretrained
 
 
 class trainer():
@@ -80,7 +81,7 @@ class trainer():
     def start(self, from_scratch=False):
         self.setup()
         # set up save logger for training graphs etc
-        self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, from_scratch)
+        self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch)
         self.val_every = 1
         self.save_model_every = 1
         # self.eval(epoch=0)
@@ -120,6 +121,7 @@ class trainer():
     def val_all(self, epoch):
         self.model.eval()
         MSEs = []
+        SSIMs = []
         ims_to_save = 3
         ims = []
         for step, sample in enumerate(tqdm(self.torch_dataloader_val, desc="Val Steps", leave=False)):
@@ -128,8 +130,12 @@ class trainer():
             im_sim = sample['sim'].to(device=self.device, dtype=torch.float)
             # forward
             pred_sim = self.model(im_real)
+            # get metrics
             mse = torch.square(pred_sim - im_sim).mean()
             MSEs.append(mse.cpu().detach().numpy())
+            ssim = SSIM(pred_sim, im_sim)
+            SSIMs.append(ssim.cpu().detach().numpy())
+
             # store some ims to save to inspection
             if len(ims) < ims_to_save:
                 ims.append({'predicted': pred_sim[0,0,:,:],
@@ -138,9 +144,11 @@ class trainer():
 
         self.model.train()
         MSE = sum(MSEs) / len(MSEs)
+        ssim = sum(SSIMs) / len(SSIMs)
         stats = {'epoch': [epoch],
                  'mean training loss': [np.mean(self.running_loss)],
-                 'val MSE': [MSE]}
+                 'val MSE': [MSE],
+                 'val_SSIM': [ssim]}
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
         # now save to csv/plot graphs
@@ -150,19 +158,24 @@ class trainer():
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
     parser.add_argument("--dir", default='..', help='path to folder where data and models are held')
-    parser.add_argument("--epochs", default=100, help='number of epochs to train for')
+    parser.add_argument("--epochs", type=int, default=100, help='number of epochs to train for')
+    parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
+    parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     ARGS = parser.parse_args()
 
     dataset_train = image_loader(base_dir=ARGS.dir)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
-    generator.apply(weights_init_normal)
-    generator.name = 'test'
+    if ARGS.pretrained_model == False:
+        generator.apply(weights_init_normal)
+        # generator.name = 'test'
+    else:
+        weights_init_pretrained(generator, ARGS.pretrained_model, name='test')
 
     train = trainer(dataset_train,
                     dataset_val,
                     generator,
                     save_dir=os.path.join(ARGS.dir, 'models', 'sim2real', 'matt'),
-                    batch_size=2,
+                    batch_size=ARGS.batch_size,
                     epochs=ARGS.epochs)
     train.start()

@@ -2,13 +2,20 @@ import torch.nn as nn
 import torch
 
 
-def weights_init_normal(m):
-    classname = m.__class__.__name__
+def weights_init_normal(model):
+    classname = model.__class__.__name__
     if classname.find("Conv") != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+        torch.nn.init.normal_(model.weight.data, 0.0, 0.02)
     elif classname.find("BatchNorm2d") != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
+        torch.nn.init.normal_(model.weight.data, 1.0, 0.02)
+        torch.nn.init.constant_(model.bias.data, 0.0)
+    model.init_weights_from = 'not_pretrained'
+
+def weights_init_pretrained(model, weights_path, name):
+    model.load_state_dict(torch.load(weights_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
+    model.init_weights_from = 'pretrained_'+name
+    print('Loaded pretrained model from: '+weights_path)
+
 
 
 ##############################
