@@ -34,6 +34,18 @@ class test_data(unittest.TestCase):
         assert sample['real'].shape == (1, self.size, self.size)
         assert sample['sim'].shape == (1, self.size, self.size)
 
+    def test_accepts_torch_loader(self):
+        batch_size=2
+        loader = torch.utils.data.DataLoader(self.h,
+                          batch_size=batch_size,
+                          shuffle=False,
+                          num_workers=batch_size)
+        for i, batch in enumerate(loader):
+            if i > 1:
+                break
+        assert batch is not None
+        assert batch['real'].shape == (batch_size, 1, self.size, self.size)
+
 
 if __name__ == '__main__':
     unittest.main()

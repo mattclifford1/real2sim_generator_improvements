@@ -1,5 +1,13 @@
 
 TODO:
+
+eval
+===============================================
+show diff generators' predicted images 
+
+
+
+training
 ===============================================
 - get alex's gan trainer copied to this repo
 - allow alex's gan trainer to input other model
