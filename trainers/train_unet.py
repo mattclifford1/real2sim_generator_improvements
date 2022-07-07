@@ -74,12 +74,13 @@ class trainer():
         # set up model for training
         self.model = self.model.to(self.device)
         self.model.train()
-        # set up save logger for training graphs etc
-        self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size)
+
         self.running_loss = [0]
 
-    def start(self):
+    def start(self, from_scratch=False):
         self.setup()
+        # set up save logger for training graphs etc
+        self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, from_scratch)
         self.val_every = 1
         self.save_model_every = 1
         # self.eval(epoch=0)

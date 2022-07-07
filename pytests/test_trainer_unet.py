@@ -33,7 +33,12 @@ class test_data(unittest.TestCase):
                              epochs=1)
 
     def test_run_epoch(self):
-        self.train.start()
+        # train from scratch
+        self.train.start(from_scratch=True)
+        # now train from old loaded checkpoint
+        self.epochs = 2
+        self.train.start(from_scratch=False)
+
 
 
 if __name__ == '__main__':

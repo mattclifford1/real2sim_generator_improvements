@@ -5,6 +5,7 @@ Author: Matt Clifford
 Email: matt.clifford@bristol.ac.uk
 '''
 import os
+import shutil
 import torch
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,8 +13,9 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
 class train_saver:
-    def __init__(self, base_dir, model, lr, lr_decay, batch_size):
+    def __init__(self, base_dir, model, lr, lr_decay, batch_size, from_scratch=False):
         self.base_dir = base_dir
+        self.from_scratch = from_scratch
         if hasattr(model, 'name'):
             self.model_name = model.name
         else:
@@ -28,6 +30,8 @@ class train_saver:
         dir = dir +'_LR_'+str(self.lr)
         dir = dir +'_decay_'+str(self.lr_decay)
         self.dir = dir +'_BS_'+str(self.batch_size)
+        if self.from_scratch:
+            shutil.rmtree(self.dir)
         self.models_dir = os.path.join(self.dir, 'models')
         self.ims_dir = os.path.join(self.dir, 'ims')
         # make dirs is dont already exist
