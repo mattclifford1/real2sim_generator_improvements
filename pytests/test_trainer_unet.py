@@ -25,14 +25,15 @@ class test_data(unittest.TestCase):
         self.dataset_val = image_loader(base_dir=self.dir, size=self.size, val=True)
         self.generator = GeneratorUNet(in_channels=1, out_channels=1)
         self.generator.apply(weights_init_normal)
-
-    def test_can_make_trainer(self):
-        train = trainer(self.dataset_train, self.dataset_val, self.generator , batch_size=2, epochs=1)
-        train.setup()
+        self.train = trainer(self.dataset_train,
+                             self.dataset_val,
+                             self.generator,
+                             save_dir=os.path.join(self.dir, 'models', 'sim2real', 'matt'),
+                             batch_size=2,
+                             epochs=1)
 
     def test_run_epoch(self):
-        train = trainer(self.dataset_train, self.dataset_val, self.generator , batch_size=2, epochs=1)
-        train.start()
+        self.train.start()
 
 
 if __name__ == '__main__':

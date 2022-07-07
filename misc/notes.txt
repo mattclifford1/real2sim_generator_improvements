@@ -15,5 +15,10 @@ training
 - freeze some layers
 - compare training graphs
 
-- own trainer (maybe simple supervision)
+
+own trainer
+===============================================
+:) own trainer (maybe simple supervision)
+- train models on GPU
+- log validation images
 - extend to multitask scenario
