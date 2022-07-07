@@ -99,15 +99,14 @@ class image_handler():
         # load images from filename
         raw_real_image = cv2.imread(real_image_filename)
         raw_sim_image = cv2.imread(sim_image_filename)
-
         # preprocess images
         processed_real_image = process_image(raw_real_image, self.im_params)
         processed_sim_image = process_image(raw_sim_image, self.im_params)
-
         # create sample and convert to torch
         sample = {"real": processed_real_image, "sim": processed_sim_image}
         sample = numpy_image_to_torch_tensor(sample)
         return sample
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
