@@ -14,7 +14,7 @@ from run_tests.diff_data_for_generators import get_results
 # ====================================================
 
 
-class test_net_comparision(unittest.TestCase):
+class test_data(unittest.TestCase):
     def setUp(self):
         # put any class contructing code in here and will be called before any tests
         self.dir = '..'
@@ -23,7 +23,6 @@ class test_net_comparision(unittest.TestCase):
         metrics = get_results(dir=self.dir, gen=('edge_2d','tap'), data=('edge_2d', 'tap'), dev=True)
         for key in metrics.keys():
             assert type(metrics[key]) == list
-            assert len(metrics[key]) > 1
 
 
 
