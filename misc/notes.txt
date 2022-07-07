@@ -20,11 +20,11 @@ own trainer
 ===============================================
 :) own trainer (maybe simple supervision)
 
-- SSIM score for validation
+- choose what weights are trainable
 
 - add more training params (when to save model/validate model etc.)
 - adjust pretrained model name
 
-- train models on GPU
+- train models on GPU (think of what to train - ie pretrained or not - shows graphs etc)
 
 - extend to multitask scenario
