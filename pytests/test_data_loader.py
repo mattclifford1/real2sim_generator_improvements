@@ -2,9 +2,9 @@ import unittest
 import os
 import torch
 
-from os.path import split, realpath, join
 # # hacky way of importing from repo
 import sys; sys.path.append('..'); sys.path.append('.')
+# from os.path import split, realpath, join
 # base_dir = split(split(realpath(__file__))[0])[0]
 # sys.path.append(base_dir)
 
@@ -19,7 +19,7 @@ class test_data(unittest.TestCase):
         # put any class contructing code in here and will be called before any tests
         self.dir = 'pytests'
         self.size = 128
-        self.h = l.image_handler(size=self.size)
+        self.h = l.image_handler(base_dir=self.dir, size=self.size)
 
     def test_can_make_loader(self):
         assert isinstance(self.h, l.image_handler)
