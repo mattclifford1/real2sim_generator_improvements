@@ -4,6 +4,10 @@ Load sim and real data with torch data loader
 Author: Matt Clifford
 Email: matt.clifford@bristol.ac.uk
 '''
+import os
+from argparse import ArgumentParser
+import sys; sys.path.append('..'); sys.path.append('.')
+
 def get_all_test_ims(dir, ext='.png'):
     ims = []
     for im in os.listdir(dir):
