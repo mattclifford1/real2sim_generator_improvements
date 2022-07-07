@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 import cv2
 import torch
 import sys; sys.path.append('..'); sys.path.append('.')
-from trainers.image_transforms import process_image
+from trainers.image_transforms import process_image, process_image_sim
 
 def get_all_ims(dir, ext='.png'):
     ims = []
@@ -101,7 +101,7 @@ class image_handler():
         raw_sim_image = cv2.imread(sim_image_filename)
         # preprocess images
         processed_real_image = process_image(raw_real_image, self.im_params)
-        processed_sim_image = process_image(raw_sim_image, self.im_params)
+        processed_sim_image = process_image_sim(raw_sim_image, self.im_params)
         # create sample and convert to torch
         sample = {"real": processed_real_image, "sim": processed_sim_image}
         sample = numpy_image_to_torch_tensor(sample)

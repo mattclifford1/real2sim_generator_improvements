@@ -1,6 +1,7 @@
 *.ptc
 *.pth
 no_git_data
+pytests/models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

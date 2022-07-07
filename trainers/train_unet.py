@@ -33,10 +33,12 @@ class trainer():
                        lr=1e-4,
                        lr_decay=1e-6,
                        epochs=100,
-                       shuffle_train=False):
+                       shuffle_train=False,
+                       shuffle_val=True):
         self.dataset_train = dataset_train
         self.dataset_val = dataset_val
         self.shuffle_train = shuffle_train
+        self.shuffle_val = shuffle_val
         self.model = model
         self.save_dir = save_dir
         self.batch_size = batch_size
@@ -59,7 +61,7 @@ class trainer():
 
         self.torch_dataloader_val = DataLoader(self.dataset_val,
                                      batch_size=self.batch_size,
-                                     shuffle=False,
+                                     shuffle=self.shuffle_val,
                                      num_workers=cores,
                                      prefetch_factor=prefetch_factor)
 
@@ -117,6 +119,8 @@ class trainer():
     def val_all(self, epoch):
         self.model.eval()
         MSEs = []
+        ims_to_save = 3
+        ims = []
         for step, sample in enumerate(tqdm(self.torch_dataloader_val, desc="Val Steps", leave=False)):
             # get val batch sample
             im_real = sample['real'].to(device=self.device, dtype=torch.float)
@@ -125,12 +129,19 @@ class trainer():
             pred_sim = self.model(im_real)
             mse = torch.square(pred_sim - im_sim).mean()
             MSEs.append(mse.cpu().detach().numpy())
+            # store some ims to save to inspection
+            if len(ims) < ims_to_save:
+                ims.append({'predicted': pred_sim[0,0,:,:],
+                            'simulated': im_sim[0,0,:,:],
+                            'real': im_real[0,0,:,:]})
+
         self.model.train()
         MSE = sum(MSEs) / len(MSEs)
         stats = {'epoch': [epoch],
                  'mean training loss': [np.mean(self.running_loss)],
                  'val MSE': [MSE]}
         self.saver.log_training_stats(stats)
+        self.saver.log_val_images(ims, epoch)
         # now save to csv/plot graphs
 
 

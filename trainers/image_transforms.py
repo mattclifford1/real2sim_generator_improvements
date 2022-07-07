@@ -71,6 +71,20 @@ def process_image(image, params_dict):
                           brightlims=params_dict['brightlims'],
                           noise_var=params_dict['noise_var'])
 
+def process_image_sim(image, params_dict):
+    return _process_image(image,
+                          gray=params_dict['gray'],
+                          bbox=None,
+                          dims=None,
+                          stdiz=params_dict['stdiz'],
+                          normlz=params_dict['normlz'],
+                          rshift=None,
+                          rzoom=None,
+                          thresh=None,
+                          add_axis=params_dict['add_axis'],
+                          brightlims=None,
+                          noise_var=None)
+
 
 def _process_image(image, gray=True, bbox=None, dims=None, stdiz=False, normlz=False, rshift=None, rzoom=None, thresh=False, add_axis=False, brightlims=None, noise_var=None):
     ''' Process raw image (e.g., before applying to neural network).
