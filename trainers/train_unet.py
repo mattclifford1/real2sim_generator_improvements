@@ -161,6 +161,7 @@ if __name__ == '__main__':
     parser.add_argument("--dir", default='..', help='path to folder where data and models are held')
     parser.add_argument("--epochs", type=int, default=100, help='number of epochs to train for')
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
+    parser.add_argument("--lr",type=float,  default=0.001, help='learning rate for optimiser')
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
     ARGS = parser.parse_args()
@@ -183,5 +184,6 @@ if __name__ == '__main__':
                     generator,
                     save_dir=os.path.join(ARGS.dir, 'models', 'sim2real', 'matt'),
                     batch_size=ARGS.batch_size,
-                    epochs=ARGS.epochs)
+                    epochs=ARGS.epochs,
+                    lr=ARGS.lr)
     train.start()
