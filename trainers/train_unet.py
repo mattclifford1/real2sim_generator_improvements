@@ -167,15 +167,16 @@ if __name__ == '__main__':
     dataset_train = image_loader(base_dir=ARGS.dir)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
+    if torch.cuda.device_count() > 1:
+        print("Using ", torch.cuda.device_count(), "GPUs")
+        generator = MyDataParallel(generator)
+        
     if ARGS.pretrained_model == False:
         generator.apply(weights_init_normal)
         # generator.name = 'test'
     else:
         weights_init_pretrained(generator, ARGS.pretrained_model, name='test')
 
-    if torch.cuda.device_count() > 1:
-        print("Using ", torch.cuda.device_count(), "GPUs")
-        generator = MyDataParallel(generator)
     train = trainer(dataset_train,
                     dataset_val,
                     generator,
