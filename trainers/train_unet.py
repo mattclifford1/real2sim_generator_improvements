@@ -62,7 +62,7 @@ class trainer():
                                      prefetch_factor=prefetch_factor)
 
         self.torch_dataloader_val = DataLoader(self.dataset_val,
-                                     batch_size=self.batch_size/4,
+                                     batch_size=int(self.batch_size/4),
                                      shuffle=self.shuffle_val,
                                      num_workers=cores,
                                      prefetch_factor=prefetch_factor)
