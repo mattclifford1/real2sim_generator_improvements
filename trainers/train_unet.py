@@ -162,15 +162,16 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, default=100, help='number of epochs to train for')
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
+    parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
     ARGS = parser.parse_args()
 
     dataset_train = image_loader(base_dir=ARGS.dir)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
-    if torch.cuda.device_count() > 1:
+    if torch.cuda.device_count() > 1 and ARGS.multi_GPU:
         print("Using ", torch.cuda.device_count(), "GPUs")
         generator = MyDataParallel(generator)
-        
+
     if ARGS.pretrained_model == False:
         generator.apply(weights_init_normal)
         # generator.name = 'test'
