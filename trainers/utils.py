@@ -13,8 +13,14 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
 class MyDataParallel(torch.nn.DataParallel):
+    """
+    Allow nn.DataParallel to call model's attributes.
+    """
     def __getattr__(self, name):
-        return getattr(self.module, name)
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
 
 class train_saver:
     def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False):
