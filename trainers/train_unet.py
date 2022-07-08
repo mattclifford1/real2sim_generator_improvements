@@ -49,6 +49,7 @@ class trainer():
         # misc inits
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cores = multiprocessing.cpu_count()
+        print('Using ', self.cores, ' CPU cores')
         # get data loader
         self.get_data_loader(prefetch_factor=2)
 
