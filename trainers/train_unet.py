@@ -173,6 +173,9 @@ if __name__ == '__main__':
     else:
         weights_init_pretrained(generator, ARGS.pretrained_model, name='test')
 
+    if torch.cuda.device_count() > 1:
+        print("Using ", torch.cuda.device_count(), "GPUs")
+        generator = nn.DataParallel(generator)
     train = trainer(dataset_train,
                     dataset_val,
                     generator,
