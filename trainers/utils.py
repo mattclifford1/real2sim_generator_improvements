@@ -40,7 +40,7 @@ class train_saver:
     def get_save_dir(self):
         dir = os.path.join(self.base_dir, self.task[0], self.task[1], self.pretrained_name)
         name = 'LR:'+str(self.lr)
-        # name = name +'_decay:'+str(self.lr_decay)
+        name = name +'_decay:'+str(self.lr_decay)
         name = name +'_BS:'+str(self.batch_size)
         self.dir = os.path.join(dir, name)
         if self.from_scratch and os.path.isdir(self.dir):
@@ -100,4 +100,4 @@ class train_saver:
             axarr[i,1].axis('off')
             axarr[i,2].axis('off')
         plt.savefig(os.path.join(self.ims_dir, str(epoch)+'.png'))
-        plt.close(f) 
+        plt.close(f)
