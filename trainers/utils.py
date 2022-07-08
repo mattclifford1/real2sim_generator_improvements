@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
+class MyDataParallel(nn.DataParallel):
+    def __getattr__(self, name):
+        return getattr(self.module, name)
+
 class train_saver:
     def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False):
         self.base_dir = base_dir

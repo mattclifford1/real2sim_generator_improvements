@@ -21,7 +21,7 @@ import multiprocessing
 from torchmetrics.functional import structural_similarity_index_measure as SSIM
 
 from trainers.data_loader import image_handler as image_loader
-from trainers.utils import train_saver
+from trainers.utils import train_saver, MyDataParallel
 from gan_models.models_128 import GeneratorUNet, weights_init_normal, weights_init_pretrained
 
 
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     if torch.cuda.device_count() > 1:
         print("Using ", torch.cuda.device_count(), "GPUs")
-        generator = nn.DataParallel(generator)
+        generator = MyDataParallel(generator)
     train = trainer(dataset_train,
                     dataset_val,
                     generator,
