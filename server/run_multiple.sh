@@ -24,7 +24,7 @@ lr="0.0001"
 sbatch -t $time -J $job_name$lr -o $dir$lr'.out' -e $dir$lr'.err' --mem=$ram server/submit_job_2.sh python trainers/train_unet.py --batch_size 512 --multi_GPU --epochs $epochs --dir /user/work/mc15445/summer-project --lr $lr
 
 # parameter search to train model from checkpoint
-ram="64G"
+ram="32G"
 time="0-2:30"    # accordingly
 job_name="MT-pre"
 epochs=100
