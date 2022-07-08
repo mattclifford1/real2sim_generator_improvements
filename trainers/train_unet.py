@@ -86,7 +86,7 @@ class trainer():
         self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch)
         self.val_every = val_every
         self.save_model_every = save_model_every
-        step_lr = [0.9, 0.98, 0.99, 0.999, 1]
+        step_lr = [0.95, 0.98, 0.99, 0.999, 1]
         step_num = 0
         # self.eval(epoch=0)
         start_epoch = self.saver.load_pretrained(self.model)
@@ -168,7 +168,7 @@ class trainer():
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
     parser.add_argument("--dir", default='..', help='path to folder where data and models are held')
-    parser.add_argument("--epochs", type=int, default=100, help='number of epochs to train for')
+    parser.add_argument("--epochs", type=int, default=250, help='number of epochs to train for')
     parser.add_argument("--task", type=str, nargs='+', default=['edge_2d', 'tap'], help='dataset to train on')
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
     parser.add_argument("--lr",type=float,  default=0.001, help='learning rate for optimiser')
