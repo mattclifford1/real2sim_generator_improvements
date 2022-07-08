@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
-class MyDataParallel(nn.DataParallel):
+class MyDataParallel(torch.nn.DataParallel):
     def __getattr__(self, name):
         return getattr(self.module, name)
 
