@@ -14,6 +14,6 @@
 # module load libs/cuda/10.2-gcc-5.4.0-2.26
 module load languages/anaconda3/2021-3.8.8-cuda-11.1-pytorch
 # srun python run_all.py --dir /user/work/mc15445/summer-project
-srun python trainers/train_unet.py --batch_size 64 --epochs 10
+srun python trainers/train_unet.py --batch_size 256 --epochs 10
  --dir /user/work/mc15445/summer-project
 wait
