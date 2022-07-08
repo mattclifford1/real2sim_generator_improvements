@@ -4,16 +4,9 @@ TODO:
 eval
 ===============================================
 show diff generators' predicted images 
+compare transfered models weights to the transferred model
 
 
-
-training
-===============================================
-- get alex's gan trainer copied to this repo
-- allow alex's gan trainer to input other model
-- train transfered models
-- freeze some layers
-- compare training graphs
 
 
 own trainer
@@ -32,3 +25,18 @@ own trainer
 - train models on GPU (think of what to train - ie pretrained or not - shows graphs etc)
 
 - extend to multitask scenario
+
+
+
+
+
+
+
+training
+===============================================
+- get alex's gan trainer copied to this repo
+- allow alex's gan trainer to input other model
+- train transfered models
+- freeze some layers
+- compare training graphs
+

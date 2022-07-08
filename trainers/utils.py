@@ -100,3 +100,4 @@ class train_saver:
             axarr[i,1].axis('off')
             axarr[i,2].axis('off')
         plt.savefig(os.path.join(self.ims_dir, str(epoch)+'.png'))
+        plt.close(f) 
