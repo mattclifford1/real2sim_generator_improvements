@@ -62,7 +62,7 @@ class trainer():
                                      prefetch_factor=prefetch_factor)
 
         self.torch_dataloader_val = DataLoader(self.dataset_val,
-                                     batch_size=int(self.batch_size/4),
+                                     batch_size=max(1, int(self.batch_size/4)),
                                      shuffle=self.shuffle_val,
                                      num_workers=cores,
                                      prefetch_factor=prefetch_factor)
@@ -79,12 +79,12 @@ class trainer():
 
         self.running_loss = [0]
 
-    def start(self, from_scratch=False):
+    def start(self, from_scratch=False, save_model_every=10, val_every=1):
         self.setup()
         # set up save logger for training graphs etc
         self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch)
-        self.val_every = 1
-        self.save_model_every = 1
+        self.val_every = val_every
+        self.save_model_every = save_model_every
         # self.eval(epoch=0)
         start_epoch = self.saver.load_pretrained(self.model)
         for epoch in tqdm(range(self.epochs), desc="Epochs"):
