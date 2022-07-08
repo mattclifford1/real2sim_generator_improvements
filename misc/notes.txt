@@ -22,6 +22,7 @@ own trainer
 
 - lr decay arg
 - graphs of training csvs (MSE and SSIM)
+- input what training set
 
 - choose what weights are trainable
 
