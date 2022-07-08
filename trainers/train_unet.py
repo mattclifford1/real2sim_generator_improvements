@@ -86,7 +86,7 @@ class trainer():
         self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch)
         self.val_every = val_every
         self.save_model_every = save_model_every
-        step_lr = [0.9, 0.98, 0.99, 0.999, 0.9999, 1]
+        step_lr = [0.9, 0.98, 0.99, 0.999, 1]
         step_num = 0
         # self.eval(epoch=0)
         start_epoch = self.saver.load_pretrained(self.model)
@@ -106,8 +106,9 @@ class trainer():
                     self.scheduler.step()
                     step_num += 1
                     print('Learning rate: ', self.scheduler.get_lr())
-
-
+                if self.ssim > 0.9999:
+                    break
+                    
         # training finished
         self.saver.save_model(self.model, epoch+1)
 
