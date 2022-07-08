@@ -12,6 +12,16 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)   # torch warning we dont care about
 
+def check_task(task_tuple):
+    task0 = ['surface_3d', 'edge_2d']
+    task1 = ['tap', 'shear']
+    if len(task_tuple) != 2:
+        raise Exception('Task needs to be length 2')
+    if task_tuple[0] not in task0:
+        raise Exception('first task arg needs to be either: ', task0, ' not:', str(task_tuple[0]))
+    if task_tuple[1] not in task1:
+        raise Exception('second task arg needs to be either: ', task1, ' not:', str(task_tuple[1]))
+
 class MyDataParallel(torch.nn.DataParallel):
     """
     Allow nn.DataParallel to call model's attributes.

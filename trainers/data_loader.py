@@ -10,6 +10,7 @@ import cv2
 import torch
 import sys; sys.path.append('..'); sys.path.append('.')
 from trainers.image_transforms import process_image, process_image_sim
+from trainers.utils import check_task
 
 def get_all_ims(dir, ext='.png'):
     ims = []
@@ -71,6 +72,7 @@ class image_handler():
                  size=128,
                  val=False):
         # real_images_dir = os.path.join(dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
+        check_task(task)
         self.dir = os.path.join(base_dir, data)
         self.task = task
         self.split_type = 'csv_val' if val else 'csv_train'

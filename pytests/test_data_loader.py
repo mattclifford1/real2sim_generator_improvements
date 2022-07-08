@@ -46,6 +46,18 @@ class test_data(unittest.TestCase):
         assert batch is not None
         assert batch['real'].shape == (batch_size, 1, self.size, self.size)
 
+    def test_bad_task_input_error(self):
+        with self.assertRaises(Exception):
+            x = l.image_handler(base_dir=self.dir, size=self.size, task=['1', '2'])
+        with self.assertRaises(Exception):
+            x = l.image_handler(base_dir=self.dir, size=self.size, task=['surface_3d', '2'])
+        with self.assertRaises(Exception):
+            x = l.image_handler(base_dir=self.dir, size=self.size, task=['surface_3d'])
+        with self.assertRaises(Exception):
+            x = l.image_handler(base_dir=self.dir, size=self.size, task=['surface_3d', 'tap', '1'])
+        with self.assertRaises(Exception):
+            x = l.image_handler(base_dir=self.dir, size=self.size, task=[])
+
 
 if __name__ == '__main__':
     unittest.main()
