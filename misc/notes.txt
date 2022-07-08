@@ -20,6 +20,9 @@ own trainer
 ===============================================
 :) own trainer (maybe simple supervision)
 
+- lr decay arg
+- graphs of training csvs (MSE and SSIM)
+
 - choose what weights are trainable
 
 - add more training params (when to save model/validate model etc.)
