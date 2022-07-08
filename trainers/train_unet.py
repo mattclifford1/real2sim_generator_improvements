@@ -14,7 +14,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim.lr_scheduler import ExponentialLR, StepLR
 
 from tqdm import tqdm
 import multiprocessing
@@ -32,7 +32,7 @@ class trainer():
                        save_dir,
                        batch_size=64,
                        lr=1e-4,
-                       lr_decay=1e-6,
+                       lr_decay=0.1,
                        epochs=100,
                        shuffle_train=False,
                        shuffle_val=True):
@@ -70,6 +70,7 @@ class trainer():
     def setup(self):
         # optimser
         self.optimiser = optim.Adam(self.model.parameters(), self.lr)
+        self.scheduler = StepLR(self.optimiser, step_size=1, gamma=self.lr_decay)
         # self.scheduler = ExponentialLR(self.optimiser, gamma=self.lr_decay)
         # loss criterion for training signal
         self.loss = nn.MSELoss()
@@ -85,6 +86,8 @@ class trainer():
         self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch)
         self.val_every = val_every
         self.save_model_every = save_model_every
+        step_lr = [0.9, 0.98, 0.99, 0.999, 0.9999, 1]
+        step_num = 0
         # self.eval(epoch=0)
         start_epoch = self.saver.load_pretrained(self.model)
         for epoch in tqdm(range(self.epochs), desc="Epochs"):
@@ -98,8 +101,12 @@ class trainer():
                         # save the trained model
                         self.saver.save_model(self.model, epoch+1)
                 # if epoch%self.lr_decay_epoch  == 0:
-                #     # lower optimiser learning rate
-                #     self.scheduler.step()
+                if self.ssim > step_lr[step_num]:
+                    # lower optimiser learning rate
+                    self.scheduler.step()
+                    step_num += 1
+                    print('Learning rate: ', self.scheduler.get_lr())
+
 
         # training finished
         self.saver.save_model(self.model, epoch+1)
@@ -144,12 +151,13 @@ class trainer():
                             'real': im_real[0,0,:,:]})
 
         self.model.train()
-        MSE = sum(MSEs) / len(MSEs)
-        ssim = sum(SSIMs) / len(SSIMs)
+        self.MSE = sum(MSEs) / len(MSEs)
+        self.ssim = sum(SSIMs) / len(SSIMs)
         stats = {'epoch': [epoch],
                  'mean training loss': [np.mean(self.running_loss)],
-                 'val MSE': [MSE],
-                 'val_SSIM': [ssim]}
+                 'val MSE': [self.MSE],
+                 'val_SSIM': [self.ssim]}
+
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
         # now save to csv/plot graphs
