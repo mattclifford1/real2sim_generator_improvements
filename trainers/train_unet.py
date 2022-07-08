@@ -108,7 +108,7 @@ class trainer():
                     print('Learning rate: ', self.scheduler.get_lr())
                 if self.ssim > 0.9999:
                     break
-                    
+
         # training finished
         self.saver.save_model(self.model, epoch+1)
 
@@ -173,6 +173,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
     parser.add_argument("--lr",type=float,  default=0.001, help='learning rate for optimiser')
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
+    parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
     parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
     ARGS = parser.parse_args()
 
@@ -188,7 +189,7 @@ if __name__ == '__main__':
         generator.apply(weights_init_normal)
         # generator.name = 'test'
     else:
-        weights_init_pretrained(generator, ARGS.pretrained_model, name='test')
+        weights_init_pretrained(generator, ARGS.pretrained_model, name=ARGS.pretrained_name)
 
     train = trainer(dataset_train,
                     dataset_val,
