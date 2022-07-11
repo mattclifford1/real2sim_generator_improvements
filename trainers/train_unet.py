@@ -87,6 +87,7 @@ class trainer():
         self.val_every = val_every
         self.save_model_every = save_model_every
         step_lr = [0.95, 0.98, 0.99, 0.999, 1]
+        step_epochs = [50, 100, self.epochs]
         step_num = 0
         # self.eval(epoch=0)
         start_epoch = self.saver.load_pretrained(self.model)
@@ -100,11 +101,14 @@ class trainer():
                 if epoch%self.save_model_every == 0:
                         # save the trained model
                         self.saver.save_model(self.model, epoch+1)
-                # if epoch%self.lr_decay_epoch  == 0:
-                if self.ssim > step_lr[step_num]:
-                    # lower optimiser learning rate
+                # lower optimiser learning rate
+                if self.ssim > step_lr[step_num]:  # if we are scoring well
                     self.scheduler.step()
                     step_num += 1
+                    print('Learning rate: ', self.scheduler.get_lr())
+                # lower if training for many epochs and no improvement on SSIM
+                if epoch > step_epochs[min(len(step_epochs)-1, step_num)]:
+                    self.scheduler.step()
                     print('Learning rate: ', self.scheduler.get_lr())
                 if self.ssim > 0.9999:
                     break
