@@ -34,8 +34,8 @@ class trainer():
                        lr=1e-4,
                        lr_decay=0.1,
                        epochs=100,
-                       shuffle_train=False,
-                       shuffle_val=True):
+                       shuffle_train=True,
+                       shuffle_val=False):
         self.dataset_train = dataset_train
         self.dataset_val = dataset_val
         self.shuffle_train = shuffle_train
