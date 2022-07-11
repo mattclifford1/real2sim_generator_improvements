@@ -2,7 +2,7 @@
 dir="server/outputs/"   # you will need to make outputs directory using 'mkdir outputs'
 mkdir $dir    # comment this out if directory already made
 ram="32G"        # change these
-time="0-10:00"
+time="0-15:00"
 job_name="gans"
 
 epochs=300
