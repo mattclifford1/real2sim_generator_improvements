@@ -1,0 +1,2 @@
+to copy on bc4 all of the training csvs but not models/images
+$ find edge_2d/ -name "*.csv" -exec cp --parents \{\} ~/storage/temp/ \;
