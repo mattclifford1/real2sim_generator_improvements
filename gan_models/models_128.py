@@ -112,6 +112,7 @@ class GeneratorUNet(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, in_channels=1):
         super(Discriminator, self).__init__()
+        self.out_size = 128 // 2 ** 4
 
         def discriminator_block(in_filters, out_filters, normalization=True):
             """Returns downsampling layers of each discriminator block"""

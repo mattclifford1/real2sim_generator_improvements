@@ -33,10 +33,11 @@ class MyDataParallel(torch.nn.DataParallel):
             return getattr(self.module, name)
 
 class train_saver:
-    def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False):
+    def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False, save_name=''):
         self.base_dir = base_dir
         self.task = task
         self.from_scratch = from_scratch
+        self.save_name = save_name
         if hasattr(model, 'name'):
             self.model_name = model.name
         else:
@@ -49,7 +50,8 @@ class train_saver:
 
     def get_save_dir(self):
         dir = os.path.join(self.base_dir, self.task[0], self.task[1], self.pretrained_name)
-        name = 'LR:'+str(self.lr)
+        name = self.save_name
+        name = name + 'LR:'+str(self.lr)
         name = name +'_decay:'+str(self.lr_decay)
         name = name +'_BS:'+str(self.batch_size)
         self.dir = os.path.join(dir, name)
