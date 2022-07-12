@@ -40,6 +40,14 @@ if __name__ == '__main__':
                      shuffle=False,
                      num_workers=cores,
                      prefetch_factor=1)
-
-    for step, sample in enumerate(tqdm(l1, desc="Train Steps", leave=False)):
-        continue
+    loaders = {'l1':l1, 'l2':l2}
+    # loaders = {'l1':l1}
+    # loaders = {}
+    for samples in tqdm(zip(*loaders.values()), desc="Train Steps", leave=False):
+        sample1 = samples[0]
+        for i, sample in enumerate(samples):
+            if i == 0:
+                continue
+            else:
+                if (sample1['real'][0,:,:,:] == sample['real'][0,:,:,:]).all():
+                    raise Exception('Samples are not different')

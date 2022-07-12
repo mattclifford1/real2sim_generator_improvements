@@ -14,7 +14,8 @@ compare transfered models weights to the transferred model
 
 own trainer
 ===============================================
-- reduce the amount of data option on data loaders
+- option to load data into RAM (speed up on bc4)
+- reduce the amount of data to use option on data loaders
 - SSIM loss?
 
 - train transferred on new training single task code
