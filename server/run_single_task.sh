@@ -3,7 +3,7 @@ dir="server/outputs/"   # you will need to make outputs directory using 'mkdir o
 mkdir $dir    # comment this out if directory already made
 ram="32G"        # change these
 time="0-16:00"
-job_name="no gans"
+job_name="no_gans"
 
 epochs=500
 batch=64
