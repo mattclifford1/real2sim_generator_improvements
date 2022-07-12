@@ -11,21 +11,18 @@ compare transfered models weights to the transferred model
 
 own trainer
 ===============================================
-:) own trainer (maybe simple supervision)
+- SSIM loss?
 
-- lr decay arg
-- graphs of training csvs (MSE and SSIM)
-- input what training set
+- train transferred on new training single task code
 
 - choose what weights are trainable
 
-- add more training params (when to save model/validate model etc.)
-- adjust pretrained model name
-
-- train models on GPU (think of what to train - ie pretrained or not - shows graphs etc)
 
 - extend to multitask scenario
-
+  - data loaders
+  - additive losses
+  - val on all train tasks
+  - trainer (make a super class or call trainer or pass list of train/val sets?)
 
 
 
