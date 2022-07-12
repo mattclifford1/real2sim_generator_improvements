@@ -14,6 +14,7 @@ compare transfered models weights to the transferred model
 
 own trainer
 ===============================================
+- reduce the amount of data option on data loaders
 - SSIM loss?
 
 - train transferred on new training single task code

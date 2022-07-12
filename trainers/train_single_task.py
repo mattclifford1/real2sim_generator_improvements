@@ -107,7 +107,6 @@ class trainer():
                                  self.dataset_train.task,
                                  name)
 
-
     def start(self, save_model_every=50, val_every=1):
         self.setup()
         self.get_saver()
@@ -177,7 +176,6 @@ class trainer():
             loss.backward()
             self.optimiser_discrim.step()
 
-
     def val_all(self, epoch):
         self.model.eval()
         MSEs = []
@@ -213,7 +211,6 @@ class trainer():
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
         # now save to csv/plot graphs
-
 
 
 if __name__ == '__main__':
