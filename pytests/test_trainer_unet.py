@@ -9,7 +9,7 @@ import sys; sys.path.append('..'); sys.path.append('.')
 # sys.path.append(base_dir)
 
 from trainers.data_loader import image_handler as image_loader
-from trainers.train_unet import trainer
+from trainers.train_single_task import trainer
 from gan_models.models_128 import GeneratorUNet, weights_init_normal
 
 # tests
@@ -34,10 +34,9 @@ class test_data(unittest.TestCase):
 
     def test_run_epoch(self):
         # train from scratch
-        self.train.start(from_scratch=True)
-        # now train from old loaded checkpoint
-        self.epochs = 2
-        self.train.start(from_scratch=False)
+        self.train.start()
+        # now train new run
+        self.train.start()
 
 
 

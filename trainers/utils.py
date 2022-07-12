@@ -33,10 +33,15 @@ class MyDataParallel(torch.nn.DataParallel):
             return getattr(self.module, name)
 
 class train_saver:
-    def __init__(self, base_dir, model, lr, lr_decay, batch_size, task, from_scratch=False, save_name=''):
+    def __init__(self, base_dir,
+                       model,
+                       lr,
+                       lr_decay,
+                       batch_size,
+                       task,
+                       save_name=''):
         self.base_dir = base_dir
         self.task = task
-        self.from_scratch = from_scratch
         self.save_name = save_name
         if hasattr(model, 'name'):
             self.model_name = model.name
@@ -55,8 +60,15 @@ class train_saver:
         name = name +'_decay:'+str(self.lr_decay)
         name = name +'_BS:'+str(self.batch_size)
         self.dir = os.path.join(dir, name)
-        if self.from_scratch and os.path.isdir(self.dir):
-            shutil.rmtree(self.dir)
+        # find if there are previous runs
+        run_name = 'run_'
+        if os.path.isdir(self.dir):
+            # shutil.rmtree(self.dir)
+            runs = [int(i[len(run_name):]) for i in os.listdir(self.dir)]
+            run_num = max(runs) + 1
+        else:
+            run_num = 0
+        self.dir = os.path.join(self.dir, run_name+str(run_num))
         self.models_dir = os.path.join(self.dir, 'models')
         self.ims_dir = os.path.join(self.dir, 'ims')
         # make dirs is dont already exist
@@ -64,11 +76,10 @@ class train_saver:
             os.makedirs(self.dir)
         if not os.path.exists(self.ims_dir):
             os.makedirs(self.ims_dir)
+        if not os.path.exists(self.models_dir):
+            os.makedirs(self.models_dir)
 
     def load_pretrained(self, model):
-        if not os.path.isdir(self.models_dir):
-            os.mkdir(self.models_dir)
-            return 0
         checkpoints = os.listdir(self.models_dir)
         saves = []
         for checkpoint in checkpoints:

@@ -93,46 +93,50 @@ class trainer():
 
         self.running_loss = [0]
 
-    def get_saver(self, from_scratch):
+    def get_saver(self):
         # set up save logger for training graphs etc
         if self.discriminator is not None:
             name = 'GAN_'
         else:
-            name = ''
-        self.saver = train_saver(self.save_dir, self.model, self.lr, self.lr_decay, self.batch_size, self.dataset_train.task, from_scratch, name)
+            name = 'no_gan'
+        self.saver = train_saver(self.save_dir,
+                                 self.model,
+                                 self.lr,
+                                 self.lr_decay,
+                                 self.batch_size,
+                                 self.dataset_train.task,
+                                 name)
 
 
-    def start(self, from_scratch=False, save_model_every=10, val_every=1):
+    def start(self, save_model_every=50, val_every=1):
         self.setup()
-        self.get_saver(from_scratch)
+        self.get_saver()
         self.val_every = val_every
         self.save_model_every = save_model_every
         step_lr = [0.95, 0.98, 0.99, 0.999, 1]
         step_epochs = [50, 100, self.epochs]
         step_num = 0
         # self.eval(epoch=0)
-        start_epoch = self.saver.load_pretrained(self.model)
         for epoch in tqdm(range(self.epochs), desc="Epochs"):
-            if epoch >= start_epoch: #if loaded pretrained only start at correct epoch of training
-                self.running_loss = []
-                for step, sample in enumerate(tqdm(self.torch_dataloader_train, desc="Train Steps", leave=False)):
-                    self.train_step(sample)
-                if epoch%self.val_every == 0:
-                    self.val_all(epoch)
-                if epoch%self.save_model_every == 0:
-                        # save the trained model
-                        self.saver.save_model(self.model, epoch+1)
-                # lower optimiser learning rate
-                if self.ssim > step_lr[step_num]:  # if we are scoring well
-                    self.scheduler.step()
-                    step_num += 1
-                    print('Learning rate: ', self.scheduler.get_lr())
-                # lower if training for many epochs and no improvement on SSIM
-                if epoch > step_epochs[min(len(step_epochs)-1, step_num)]:
-                    self.scheduler.step()
-                    print('Learning rate: ', self.scheduler.get_lr())
-                if self.ssim > 0.9999:
-                    break
+            self.running_loss = []
+            for step, sample in enumerate(tqdm(self.torch_dataloader_train, desc="Train Steps", leave=False)):
+                self.train_step(sample)
+            if epoch%self.val_every == 0:
+                self.val_all(epoch)
+            if epoch%self.save_model_every == 0:
+                    # save the trained model
+                    self.saver.save_model(self.model, epoch+1)
+            # lower optimiser learning rate
+            if self.ssim > step_lr[step_num]:  # if we are scoring well
+                self.scheduler.step()
+                step_num += 1
+                print('Learning rate: ', self.scheduler.get_lr())
+            # lower if training for many epochs and no improvement on SSIM
+            if epoch > step_epochs[min(len(step_epochs)-1, step_num)]:
+                self.scheduler.step()
+                print('Learning rate: ', self.scheduler.get_lr())
+            if self.ssim > 0.9999:
+                break
 
         # training finished
         self.saver.save_model(self.model, epoch+1)
@@ -222,25 +226,35 @@ if __name__ == '__main__':
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
     parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
+    parser.add_argument("--GAN", default=False, action='store_true', help='train against discriminator')
     ARGS = parser.parse_args()
 
     print('training on: ', ARGS.task)
     dataset_train = image_loader(base_dir=ARGS.dir, task=ARGS.task)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True, task=ARGS.task)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
+    if ARGS.GAN == True:
+        discriminator = Discriminator(in_channels=1)
+    else:
+        discriminator = None
+
     if torch.cuda.device_count() > 1 and ARGS.multi_GPU:
         print("Using ", torch.cuda.device_count(), "GPUs")
         generator = MyDataParallel(generator)
+        if ARGS.GAN == True:
+            discriminator = MyDataParallel(discriminator)
 
     if ARGS.pretrained_model == False:
         generator.apply(weights_init_normal)
-        # generator.name = 'test'
+        if ARGS.GAN == True:
+            discriminator.apply(weights_init_normal)
     else:
         weights_init_pretrained(generator, ARGS.pretrained_model, name=ARGS.pretrained_name)
 
     train = trainer(dataset_train,
                     dataset_val,
                     generator,
+                    discriminator,
                     save_dir=os.path.join(ARGS.dir, 'models', 'sim2real', 'matt'),
                     batch_size=ARGS.batch_size,
                     epochs=ARGS.epochs,
