@@ -24,6 +24,8 @@ if __name__ == '__main__':
     parser.add_argument("--dir", default='..', help='path to folder where data and models are held')
     parser.add_argument("--task", type=str, nargs='+', default=['edge_2d', 'tap'], help='dataset to train on')
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
+    parser.add_argument("--prefetch",type=int,  default=1, help='prefetch data amount')
+    parser.add_argument("--cores",type=int,  default=int(multiprocessing.cpu_count()/2), help='number of cpu cores to use')
     ARGS = parser.parse_args()
 
 
@@ -34,8 +36,8 @@ if __name__ == '__main__':
     l1 = DataLoader(dataset_train_1,
                      batch_size=ARGS.batch_size,
                      shuffle=False,
-                     num_workers=cores,
-                     prefetch_factor=1)
+                     num_workers=ARGS.cores,
+                     prefetch_factor=ARGS.prefetch)
 
     for step, sample in enumerate(tqdm(l1, desc="Data loader", leave=True)):
         im_real = sample['real'].to(device=device, dtype=torch.float)
