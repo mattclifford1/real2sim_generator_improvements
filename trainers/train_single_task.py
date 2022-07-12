@@ -146,8 +146,8 @@ class trainer():
         im_real = sample['real'].to(device=self.device, dtype=torch.float)
         im_sim = sample['sim'].to(device=self.device, dtype=torch.float)
         if self.discriminator is not None:
-            gan_gt_real = torch.ones(im_real.size(0), 1, self.discriminator.out_size, self.discriminator.out_size)
-            gan_gt_fake = torch.zeros(im_real.size(0), 1, self.discriminator.out_size, self.discriminator.out_size)
+            gan_gt_real = torch.ones(im_real.size(0), 1, self.discriminator.out_size, self.discriminator.out_size).to(device=self.device, dtype=torch.float)
+            gan_gt_fake = torch.zeros(im_real.size(0), 1, self.discriminator.out_size, self.discriminator.out_size).to(device=self.device, dtype=torch.float)
         # zero the parameter gradients
         self.optimiser.zero_grad()
         # forward

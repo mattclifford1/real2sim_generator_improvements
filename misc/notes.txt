@@ -4,7 +4,10 @@ TODO:
 eval
 ===============================================
 show diff generators' predicted images 
+
 compare transfered models weights to the transferred model
+  - script to automatically generate them all
+  - easily transfer results from bc4
 
 
 
