@@ -70,7 +70,8 @@ class image_handler():
                  data='data/Bourne/tactip',
                  task=('edge_2d', 'tap'),
                  size=128,
-                 val=False):
+                 val=False,
+                 store_ram=False):
         # real_images_dir = os.path.join(dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
         check_task(task)
         self.dir = os.path.join(base_dir, data)
@@ -82,6 +83,9 @@ class image_handler():
         self.check_image_pairs_exist()
         self.im_params = get_params(val)
         self.im_params['size'] = (size, size)
+        self.store_ram = store_ram
+        if self.store_ram == True:
+            self.load_dataset_to_ram()
 
     def check_image_pairs_exist(self):
         for image in self.images:
@@ -90,18 +94,30 @@ class image_handler():
                 raise Exception(sim_im, ' image not found')
         # print('Found all image pairs')
 
+    def load_dataset_to_ram(self):
+        self.data_in_ram = {'real':[], 'sim':[]}
+        for i in range(len(self.images)):
+            real_image_filename = os.path.join(self.real_dir, self.images[i])
+            sim_image_filename = os.path.join(self.sim_dir, self.images[i])
+            self.data_in_ram['real'].append(cv2.imread(real_image_filename))
+            self.data_in_ram['sim'].append(cv2.imread(sim_image_filename))
+
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, i):
         if torch.is_tensor(i):
             i = i.tolist()
-        # get image filepaths
-        real_image_filename = os.path.join(self.real_dir, self.images[i])
-        sim_image_filename = os.path.join(self.sim_dir, self.images[i])
-        # load images from filename
-        raw_real_image = cv2.imread(real_image_filename)
-        raw_sim_image = cv2.imread(sim_image_filename)
+        if self.store_ram == True:  # get pre loaded from ram
+            raw_real_image = self.data_in_ram['real']
+            raw_sim_image = self.data_in_ram['sim']
+        else:   # load from disk
+            # get image filepaths
+            real_image_filename = os.path.join(self.real_dir, self.images[i])
+            sim_image_filename = os.path.join(self.sim_dir, self.images[i])
+            # load images from filename
+            raw_real_image = cv2.imread(real_image_filename)
+            raw_sim_image = cv2.imread(sim_image_filename)
         # preprocess images
         processed_real_image = process_image(raw_real_image, self.im_params)
         processed_sim_image = process_image_sim(raw_sim_image, self.im_params)
