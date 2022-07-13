@@ -130,8 +130,8 @@ class trainer():
             if self.ssim > 0.9999:
                 break
 
-        # training finished
-        self.saver.save_model(self.model, 'final_generator')
+        # # training finished
+        # self.saver.save_model(self.model, 'final_generator')
 
     def train_step(self, sample):
         # get training batch sample
