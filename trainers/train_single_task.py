@@ -224,11 +224,12 @@ if __name__ == '__main__':
     parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
     parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
     parser.add_argument("--GAN", default=False, action='store_true', help='train against discriminator')
+    parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
     ARGS = parser.parse_args()
 
     print('training on: ', ARGS.task)
-    dataset_train = image_loader(base_dir=ARGS.dir, task=ARGS.task)
-    dataset_val = image_loader(base_dir=ARGS.dir, val=True, task=ARGS.task)
+    dataset_train = image_loader(base_dir=ARGS.dir, task=ARGS.task, store_ram=ARGS.ram)
+    dataset_val = image_loader(base_dir=ARGS.dir, val=True, task=ARGS.task, store_ram=ARGS.ram)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
     if ARGS.GAN == True:
         discriminator = Discriminator(in_channels=1)
