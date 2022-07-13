@@ -1,1 +1,0 @@
-{"dims": [256, 256], "rshift": [0.025, 0.025], "rzoom": null, "thresh": true, "brightlims": null, "noise_var": null, "stdiz": false, "normlz": true, "joint_aug": false}
