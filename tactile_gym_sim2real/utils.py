@@ -6,7 +6,7 @@ import json
 def clear_dir(dir):
     if os.path.isdir(dir):
         empty_dir(dir)
-        
+
 def check_dir(dir):
 
     # check save dir exists
