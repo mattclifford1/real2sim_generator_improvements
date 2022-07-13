@@ -92,6 +92,11 @@ class trainer():
             self.loss_pixel_wise  = nn.L1Loss()
 
         self.running_loss = [0]
+        self.ssim = 0
+        # attributes to step the learning rate scheduler
+        self.step_lr = [0.95, 0.98, 0.99, 0.999, 1]
+        self.step_epochs = [50, 100, self.epochs]
+        self.step_num = 0
 
     def get_saver(self):
         # set up save logger for training graphs etc
@@ -107,38 +112,26 @@ class trainer():
                                  self.dataset_train.task,
                                  name)
 
-    def start(self, save_model_every=50, val_every=1):
+    def start(self, val_every=1, save_model_every=100):
         self.setup()
         self.get_saver()
         self.val_every = val_every
         self.save_model_every = save_model_every
-        step_lr = [0.95, 0.98, 0.99, 0.999, 1]
-        step_epochs = [50, 100, self.epochs]
-        step_num = 0
-        # self.eval(epoch=0)
+        self.val_all(epoch=0)
         for epoch in tqdm(range(self.epochs), desc="Epochs"):
+            self.epoch = epoch
             self.running_loss = []
             for step, sample in enumerate(tqdm(self.torch_dataloader_train, desc="Train Steps", leave=False)):
                 self.train_step(sample)
-            if epoch%self.val_every == 0:
-                self.val_all(epoch)
-            if epoch%self.save_model_every == 0:
-                    # save the trained model
-                    self.saver.save_model(self.model, epoch+1)
-            # lower optimiser learning rate
-            if self.ssim > step_lr[step_num]:  # if we are scoring well
-                self.scheduler.step()
-                step_num += 1
-                print('Learning rate: ', self.scheduler.get_lr())
-            # lower if training for many epochs and no improvement on SSIM
-            if epoch > step_epochs[min(len(step_epochs)-1, step_num)]:
-                self.scheduler.step()
-                print('Learning rate: ', self.scheduler.get_lr())
+            if self.epoch%self.val_every == 0:
+                self.val_all(self.epoch+1)
+                self.maybe_save_model()
+            self.check_to_lower_learning_rate()
             if self.ssim > 0.9999:
                 break
 
         # training finished
-        self.saver.save_model(self.model, epoch+1)
+        self.saver.save_model(self.model, 'final_generator')
 
     def train_step(self, sample):
         # get training batch sample
@@ -177,6 +170,7 @@ class trainer():
             self.optimiser_discrim.step()
 
     def val_all(self, epoch):
+        self._last_ssim = self.ssim
         self.model.eval()
         MSEs = []
         SSIMs = []
@@ -207,10 +201,27 @@ class trainer():
                  'mean training loss': [np.mean(self.running_loss)],
                  'val MSE': [self.MSE],
                  'val_SSIM': [self.ssim]}
-
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
-        # now save to csv/plot graphs
+
+    def maybe_save_model(self):
+        if self._last_ssim < self.ssim:
+            self.saver.save_model(self.model, 'best_generator')
+        # legacy code to save every x epochs
+        # if epoch%self.save_model_every == 0:
+        #         # save the trained model
+        #         self.saver.save_model(self.model, epoch+1)
+        # lower optimiser learning rate
+
+    def check_to_lower_learning_rate(self):
+        if self.ssim > self.step_lr[self.step_num]:  # if we are scoring well
+            self.scheduler.step()
+            self.step_num += 1
+            print('Learning rate: ', self.scheduler.get_lr())
+        # lower if training for many epochs and no improvement on SSIM
+        if self.epoch > self.step_epochs[min(len(self.step_epochs)-1, self.step_num)]:
+            self.scheduler.step()
+            print('Learning rate: ', self.scheduler.get_lr())
 
 
 if __name__ == '__main__':
