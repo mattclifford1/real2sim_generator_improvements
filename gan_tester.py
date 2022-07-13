@@ -33,22 +33,27 @@ def model_to_device(model):
     return model
 
 class gan_tester():
-    def __init__(self, gen_model_dir, image_size=[128, 128], discrim_model_dir=None):
+    def __init__(self, gen_model_dir, image_size=[128, 128], discrim_model_dir=None, io=True):
         self.gen_model_dir = gen_model_dir
         self.discrim_model_dir = discrim_model_dir
         self.image_size = image_size
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.io = io
         self.init_generator()
         if self.discrim_model_dir is not None:
             self.init_discrim()
 
     def init_generator(self):
         self.generator = GeneratorUNet(in_channels=1, out_channels=1)
-        self.generator.load_state_dict(torch.load(os.path.join(self.gen_model_dir, 'checkpoints/best_generator.pth'), map_location=torch.device(self.device)))
+        if os.path.isfile(self.gen_model_dir):
+            self.generator.load_state_dict(torch.load(self.gen_model_dir, map_location=torch.device(self.device)))
+        else:
+            self.generator.load_state_dict(torch.load(os.path.join(self.gen_model_dir, 'checkpoints/best_generator.pth'), map_location=torch.device(self.device)))
         self.generator = model_to_device(self.generator)
         self.generator.eval()
-        # get image io helper
-        self.gen_ims_io = GAN_io(self.gen_model_dir, rl_image_size=self.image_size)
+        if self.io == True:
+            # get image io helper
+            self.gen_ims_io = GAN_io(self.gen_model_dir, rl_image_size=self.image_size)
 
     def init_discrim(self):
         self.discriminator = Discriminator(in_channels=1)
@@ -105,7 +110,7 @@ def get_all_test_ims(dir, ext='.png'):
     return ims
 
 def get_weights(gen_model_dir, discrim_model_dir=None):
-    tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir)
+    tester = gan_tester(gen_model_dir, discrim_model_dir=discrim_model_dir, io=False)
     weights = tester.get_all_model_weights()
     # convert torch tensors to numpy to easier analysis
     layers = {}
