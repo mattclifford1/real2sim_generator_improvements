@@ -8,6 +8,7 @@ import os
 from argparse import ArgumentParser
 import cv2
 import torch
+from tqdm import tqdm
 import sys; sys.path.append('..'); sys.path.append('.')
 from trainers.image_transforms import process_image, process_image_sim
 from trainers.utils import check_task
@@ -92,14 +93,16 @@ class image_handler():
             sim_im = os.path.join(self.sim_dir, image)
             if not os.path.isfile(sim_im):
                 raise Exception(sim_im, ' image not found')
-        # print('Found all image pairs')
 
     def load_dataset_to_ram(self):
         self.data_in_ram = {'real':[], 'sim':[]}
-        for i in range(len(self.images)):
+        for i in tqdm(range(len(self.images)), desc='Loading dataset into RAM', leave=False):
             real_image_filename = os.path.join(self.real_dir, self.images[i])
             sim_image_filename = os.path.join(self.sim_dir, self.images[i])
+            # print('=======================')
+            # print(real_image_filename)
             self.data_in_ram['real'].append(cv2.imread(real_image_filename))
+            # print(sim_image_filename)
             self.data_in_ram['sim'].append(cv2.imread(sim_image_filename))
 
     def __len__(self):
@@ -109,8 +112,8 @@ class image_handler():
         if torch.is_tensor(i):
             i = i.tolist()
         if self.store_ram == True:  # get pre loaded from ram
-            raw_real_image = self.data_in_ram['real']
-            raw_sim_image = self.data_in_ram['sim']
+            raw_real_image = self.data_in_ram['real'][i]
+            raw_sim_image = self.data_in_ram['sim'][i]
         else:   # load from disk
             # get image filepaths
             real_image_filename = os.path.join(self.real_dir, self.images[i])
