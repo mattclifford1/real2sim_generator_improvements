@@ -98,8 +98,8 @@ class train_saver:
         else:
             return 0 #no pretrained found
 
-    def save_model(self, model, epoch):
-        torch.save(model.state_dict(), os.path.join(self.models_dir, str(epoch)+'.pth'))
+    def save_model(self, model, name):
+        torch.save(model.state_dict(), os.path.join(self.models_dir, str(name)+'.pth'))
 
     def log_training_stats(self, stats_dicts):
         df = pd.DataFrame(stats_dicts)
