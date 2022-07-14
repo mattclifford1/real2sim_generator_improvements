@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
     # Parameters
     augmentation_params = {
-              'dims':        (256, 256),
+              'dims':        (128, 128),
               'rshift':      (0.025, 0.025),
               'rzoom':       None,  # (0.98, 1),
               'thresh':      True,
