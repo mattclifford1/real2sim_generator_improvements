@@ -86,19 +86,31 @@ def plot_layers_diff(net_names, nets_weights, comparision_name, ax=None, y=False
 if __name__ == '__main__':
     # get command line arguments
     parser = ArgumentParser(description='Plot training graphs')
-    parser.add_argument("--dir", default='..', help='path to folder where training graphs are within')
+    parser.add_argument("--dir", default=os.path.join(os.path.expanduser('~'), 'Downloads', 'matt'), help='path to folder where training graphs are within')
     ARGS = parser.parse_args()
 
     # define the  label:filepath   to plot
+    pretrained = 'pretrained_surface_shear'
+    model = os.path.join('models', 'best_generator.pth')
     models = {
-        'edge tap': os.path.join('edge_2d', 'tap', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        # 'edge tap GAN': os.path.join('edge_2d', 'tap', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        'edge shear': os.path.join('edge_2d', 'shear', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        # 'edge shear GAN': os.path.join('edge_2d', 'shear', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        'surface tap': os.path.join('surface_3d', 'tap', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        # 'surface tap GAN': os.path.join('surface_3d', 'tap', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        'surface shear': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
-        # 'surface shear GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', 'models', 'best_generator.pth'),
+        'edge tap': os.path.join('edge_2d', 'tap', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'edge tap GAN': os.path.join('edge_2d', 'tap', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_1', model),
+        # 'edge shear': os.path.join('edge_2d', 'shear', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'edge shear GAN': os.path.join('edge_2d', 'shear', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_1', model),
+        # 'surface tap': os.path.join('surface_3d', 'tap', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'surface tap GAN': os.path.join('surface_3d', 'tap', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'surface shear': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'surface shear GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+
+        'pretrained[ss] edge tap': os.path.join('edge_2d', 'tap', pretrained, 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] edge tap GAN': os.path.join('edge_2d', 'tap', pretrained, 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] edge shear': os.path.join('edge_2d', 'shear', pretrained, 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] edge shear GAN': os.path.join('edge_2d', 'shear', pretrained, 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] surface tap': os.path.join('surface_3d', 'tap', pretrained, 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] surface tap GAN': os.path.join('surface_3d', 'tap', pretrained, 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+        'pretrained[ss] surface shear': os.path.join('surface_3d', 'shear', pretrained, 'no_ganLR:0.001_decay:0.1_BS:64', 'run_0', model),
+        # 'pretrained[ss] surface shear GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_LR:0.001_decay:0.1_BS:64', 'run_0', model),
+        'original model[ss]': os.path.join(pretrained, model)
     }
 
     # get weights for all networks
