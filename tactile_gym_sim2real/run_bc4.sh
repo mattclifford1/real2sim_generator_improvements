@@ -14,13 +14,13 @@ time="0-7:00"
 # train from scratch GAN
 task="edge_2d tap"
 name='et'
-sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir
+sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir --task $task
 task="edge_2d shear"
 name='es'
-sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir
+sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir --task $task
 task="surface_3d tap"
 name='st'
-sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir
+sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir --task $task
 task="surface_3d shear"
 name='ss'
-sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir
+sbatch -t $time -J $name$job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh python tactile_gym_sim2real/pix2pix.py --epochs $epochs --dir $data_dir --task $task
