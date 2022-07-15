@@ -50,6 +50,11 @@ Try different metrics out to eval model's performance (mSSIM, NLPD, euclidean, e
 Get examples of high/low SSIM etc.
   - see if they capture what we are after in a similarity
 
+https://pypi.org/project/image-similarity-measures/
+https://www.cns.nyu.edu/~lcv/NLPyr/
+https://github.com/alexhepburn/expert/blob/bb3ec766a7242961e9a47b399b8ab6b554c51fa6/expert/models/pyramids.py#L34
+https://www.alexberardino.com/perceptually-optimized-image-rendering
+
 
 
 
