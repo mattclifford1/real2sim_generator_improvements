@@ -6,7 +6,7 @@ ram="32G"        # change these
 data_dir="/user/work/mc15445/summer-project"
 epochs=250
 batch=64
-lr="0.001"
+lr="0.0002"
 
 # what pretrained model to use
 model=/user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[surface_3d]/128x128_[shear]_250epochs/checkpoints/best_generator.pth
