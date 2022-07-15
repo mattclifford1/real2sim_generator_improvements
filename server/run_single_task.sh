@@ -6,7 +6,7 @@ ram="32G"        # change these
 data_dir="/user/work/mc15445/summer-project"
 epochs=250
 batch=64
-lr="0.001"
+lr="0.0002"
 
 job_name="no_gans"
 time="0-5:00"
