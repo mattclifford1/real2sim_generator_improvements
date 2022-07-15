@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 import cv2
 import torch
 from tqdm import tqdm
+import random
 import sys; sys.path.append('..'); sys.path.append('.')
 from trainers.image_transforms import process_image, process_image_sim
 from trainers.utils import check_task
@@ -72,7 +73,8 @@ class image_handler():
                  task=('edge_2d', 'tap'),
                  size=128,
                  val=False,
-                 store_ram=False):
+                 store_ram=False,
+                 use_percentage_of_data=None):
         # real_images_dir = os.path.join(dir, 'data/Bourne/tactip/real/'+data[0]+'/'+data[1]+'/csv_val/images')
         check_task(task)
         self.dir = os.path.join(base_dir, data)
@@ -84,6 +86,9 @@ class image_handler():
         self.check_image_pairs_exist()
         self.im_params = get_params(val)
         self.im_params['size'] = (size, size)
+        self.use_percentage_of_data = use_percentage_of_data
+        if self.use_percentage_of_data is not None:
+            self.prune_data()
         self.store_ram = store_ram
         if self.store_ram == True:
             self.load_dataset_to_ram()
@@ -93,6 +98,20 @@ class image_handler():
             sim_im = os.path.join(self.sim_dir, image)
             if not os.path.isfile(sim_im):
                 raise Exception(sim_im, ' image not found')
+
+    def prune_data(self):
+        ''' only use a proportion of the data, takes a random sample of the data'''
+        '''TODO: remove amount of data specified
+                - slice list to length required
+                - write test for this (test this code works also)
+                   - error rasing
+                   - shortening
+                '''
+        if self.use_percentage_of_data < 0 or self.use_percentage_of_data > 1:
+            raise Exception('use_percentage_of_data needs to be between 0 and 1')
+        random.shuffle(self.images)
+        to_use = max(1, int(len(self.images)*self.use_percentage_of_data))
+        self.images = self.images[:to_use]
 
     def load_dataset_to_ram(self):
         self.data_in_ram = {'real':[], 'sim':[]}
