@@ -13,6 +13,8 @@ Trainer
   -
   - train and compare SSIM
 
+- make a superclass of the trainers to work with single and multitask
+
 - reduce the amount of data to use option on data loaders
 - choose what weights are trainable
 
