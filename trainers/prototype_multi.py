@@ -15,7 +15,7 @@ import multiprocessing
 from torchmetrics.functional import structural_similarity_index_measure as SSIM
 
 from trainers.data_loader import image_handler as image_loader
-from trainers.utils import train_saver, MyDataParallel
+from trainers.utils import train_saver, MyDataParallel, show_example_pred_ims
 from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
 
 

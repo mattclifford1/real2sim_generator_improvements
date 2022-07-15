@@ -22,7 +22,7 @@ import multiprocessing
 from torchmetrics.functional import structural_similarity_index_measure as SSIM
 
 from trainers.data_loader import image_handler as image_loader
-from trainers.utils import train_saver, MyDataParallel
+from trainers.utils import train_saver, MyDataParallel, show_example_pred_ims
 from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
 
 
@@ -31,11 +31,13 @@ class validater():
                 dataset_val,
                 model,
                 batch_size=64,
-                shuffle_val=False):
+                shuffle_val=False,
+                show_ims=False):
         self.dataset_val = dataset_val
         self.shuffle_val = shuffle_val
         self.model = model
         self.batch_size = batch_size
+        self.show_ims = show_ims
         # misc inits
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cores = multiprocessing.cpu_count()
@@ -59,7 +61,7 @@ class validater():
         self.model.eval()
         MSEs = []
         SSIMs = []
-        ims_to_save = 3
+        ims_to_save = 5
         ims = []
         for step, sample in enumerate(tqdm(self.torch_dataloader_val, desc="Val Steps", leave=False)):
             # get val batch sample
@@ -78,6 +80,9 @@ class validater():
                 ims.append({'predicted': pred_sim[0,0,:,:],
                             'simulated': im_sim[0,0,:,:],
                             'real': im_real[0,0,:,:]})
+            elif self.show_ims == True:
+                show_example_pred_ims(ims)
+                ims = []
 
         self.MSE = sum(MSEs) / len(MSEs)
         self.ssim = sum(SSIMs) / len(SSIMs)
@@ -87,7 +92,6 @@ class validater():
         for key in stats.keys():
             print(key,': ',stats[key])
 
-
         # self.saver.log_training_stats(stats)
         # self.saver.log_val_images(ims, epoch)
 
@@ -96,7 +100,8 @@ def run_val(dir='..',
             batch_size=64,
             pretrained_model=False,
             pretrained_name='test',
-            ram=False):
+            ram=False,
+            show_ims=False):
     print('validating on: ', ARGS.task)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True, task=ARGS.task, store_ram=ARGS.ram)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
@@ -108,7 +113,8 @@ def run_val(dir='..',
 
     v = validater(dataset_val,
                     generator,
-                    batch_size=ARGS.batch_size)
+                    batch_size=ARGS.batch_size,
+                    show_ims=show_ims)
     v.start()
 
 
@@ -120,10 +126,12 @@ if __name__ == '__main__':
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
     parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
+    parser.add_argument("--show_ims", default=False, action='store_true', help='show some example images')
     ARGS = parser.parse_args()
     run_val(dir=ARGS.dir,
                 task=ARGS.task,
                 batch_size=ARGS.batch_size,
                 pretrained_model=ARGS.pretrained_model,
                 pretrained_name=ARGS.pretrained_name,
-                ram=ARGS.ram)
+                ram=ARGS.ram,
+                show_ims=ARGS.show_ims)

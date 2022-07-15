@@ -124,3 +124,18 @@ class train_saver:
             axarr[i,2].axis('off')
         plt.savefig(os.path.join(self.ims_dir, str(epoch)+'.png'))
         plt.close(f)
+
+
+def show_example_pred_ims(ims):
+    f, axarr = plt.subplots(nrows=len(ims), ncols=3)
+    axarr[0,0].set_title('real')
+    axarr[0,1].set_title('predicted')
+    axarr[0,2].set_title('simulated')
+    for i, im_dict in enumerate(ims):
+        axarr[i,0].imshow(im_dict['real'].cpu().detach().numpy(), cmap='gray')
+        axarr[i,1].imshow(im_dict['predicted'].cpu().detach().numpy(), cmap='gray')
+        axarr[i,2].imshow(im_dict['simulated'].cpu().detach().numpy(), cmap='gray')
+        axarr[i,0].axis('off')
+        axarr[i,1].axis('off')
+        axarr[i,2].axis('off')
+    plt.show()
