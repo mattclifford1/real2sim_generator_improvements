@@ -1,44 +1,70 @@
 
 TODO:
 
-eval
+
+Trainer
 ===============================================
-show diff generators' predicted images 
+- training:  lower learning rate/save best model based upon train MSE/loss not val SSIM
 
-compare transfered models weights to the transferred model
-  - script to automatically generate them all
-  - easily transfer results from bc4
+- make GAN training identical to alexs
+  - same learning rate
+  - same decay
+  - same loss weights
+  -
+  - train and compare SSIM
 
-
-
-
-own trainer
-===============================================
-- option to load data into RAM (speed up on bc4) -- currently there is a bug 
 - reduce the amount of data to use option on data loaders
-- SSIM loss?
-
-- train transferred on new training single task code
-
 - choose what weights are trainable
 
-
-- extend to multitask scenario
-  - data loaders
-  - additive losses
-  - val on all train tasks
-  - trainer (make a super class or call trainer or pass list of train/val sets?)
+- Add NLPD loss
+- Add SSIM loss
 
 
 
 
-
-
-training
+Multitask
 ===============================================
-- get alex's gan trainer copied to this repo
-- allow alex's gan trainer to input other model
-- train transfered models
-- freeze some layers
-- compare training graphs
+extend to multitask scenario (wait for new GAN code?)
+  - additive losses
+  - val on all train tasks - save validation data properly (cols on csv sort out)
 
+Predict or input (surface, edge)
+
+
+
+
+Evaluation: Down stream task
+===============================================
+Get pose estimation task set up
+Train in the simulation space
+Easy Validation code
+
+- do we need different training set for real2sim and downstream tasks?
+
+
+
+
+Metrics
+===============================================
+Try different metrics out to eval model's performance (mSSIM, NLPD, euclidean, etc.)
+Get examples of high/low SSIM etc.
+  - see if they capture what we are after in a similarity
+
+
+
+
+Write up
+===============================================
+- Aims / Hypothesis
+- Experiments
+- Graphs
+
+
+Experiments:
+  - How similar are models? -> weights difference
+  - Can models perform well on other tasks?
+  - How effectively can models be transferred/fine tuned?
+    - Computation reduction
+    - Data reduction
+  - Do we need a model for each task?
+    - Model reduction

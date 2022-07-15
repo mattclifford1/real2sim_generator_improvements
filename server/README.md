@@ -13,4 +13,9 @@ Run the script:
 ```
 $ ./server/get_models_from_server.sh
 ```
-to download to ``~/Downloads`
+to download to `~/Downloads`
+
+
+# Training times
+noGan -> ~4.5hr for 250 epochs.
+GAN -> ~6hr for 250 epochs.
