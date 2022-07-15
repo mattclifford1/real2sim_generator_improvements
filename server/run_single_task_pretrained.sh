@@ -10,7 +10,7 @@ lr="0.0002"
 
 # what pretrained model to use
 model=/user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[edge_2d]/128x128_[shear]_250epochs/checkpoints/best_generator.pth
-name=surface_shear
+name=edge_shear
 
 job_name="pre_no_gans"
 time="0-5:00"
