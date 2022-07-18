@@ -92,6 +92,7 @@ class trainer():
         self.running_loss = [0]
         self.ssim = 0
         self.MSE = 1*128*128
+        self.current_training_loss = 1*128*128
         # attributes to step the learning rate scheduler
         self.step_lr = [0.95, 0.98, 0.99, 0.999, 1]
         self.step_epochs = [50, 100, self.epochs]
@@ -111,7 +112,8 @@ class trainer():
                                  self.lr_decay,
                                  self.batch_size,
                                  self.dataset_train.task,
-                                 name)
+                                 name,
+                                 self.dataset_train.use_percentage_of_data)
 
     def start(self, val_every=1, save_model_every=100):
         self.setup()
@@ -126,13 +128,12 @@ class trainer():
                 self.train_step(sample)
             if self.epoch%self.val_every == 0:
                 self.val_all(self.epoch+1)
-                self.maybe_save_model()
             # self.check_to_lower_learning_rate()
             # if self.ssim > 0.9999:
             #     break
 
         # # training finished
-        # self.saver.save_model(self.model, 'final_generator')
+        self.saver.save_model(self.model, 'final_generator')
 
     def train_step(self, sample):
         # get training batch sample
@@ -170,7 +171,8 @@ class trainer():
             self.optimiser_discrim.step()
 
     def val_all(self, epoch):
-        self._last_MSE = self.MSE
+        self.previous_training_loss = self.current_training_loss
+        self.current_training_loss = np.mean(self.running_loss)
         self.model.eval()
         MSEs = []
         SSIMs = []
@@ -203,9 +205,10 @@ class trainer():
                  'val_SSIM': [self.ssim]}
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
+        self.maybe_save_model()
 
     def maybe_save_model(self):
-        if self._last_MSE < self.MSE: # Maybe change to loss training loss?
+        if self.previous_training_loss > self.current_training_loss:
             self.saver.save_model(self.model, 'best_generator')
         # legacy code to save every x epochs
         # if epoch%self.save_model_every == 0:
@@ -231,6 +234,7 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, default=250, help='number of epochs to train for')
     parser.add_argument("--task", type=str, nargs='+', default=['edge_2d', 'tap'], help='dataset to train on')
     parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
+    parser.add_argument("--data_size",type=float,  default=None, help='proportion of training data to use - value between 0 and 1')
     parser.add_argument("--lr",type=float,  default=0.0002, help='learning rate for optimiser')
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
@@ -240,7 +244,7 @@ if __name__ == '__main__':
     ARGS = parser.parse_args()
 
     print('training on: ', ARGS.task)
-    dataset_train = image_loader(base_dir=ARGS.dir, task=ARGS.task, store_ram=ARGS.ram)
+    dataset_train = image_loader(base_dir=ARGS.dir, task=ARGS.task, store_ram=ARGS.ram, use_percentage_of_data=ARGS.data_size)
     dataset_val = image_loader(base_dir=ARGS.dir, val=True, task=ARGS.task, store_ram=ARGS.ram)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
     if ARGS.GAN == True:

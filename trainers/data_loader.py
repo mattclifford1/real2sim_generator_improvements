@@ -101,12 +101,6 @@ class image_handler():
 
     def prune_data(self):
         ''' only use a proportion of the data, takes a random sample of the data'''
-        '''TODO: remove amount of data specified
-                - slice list to length required
-                - write test for this (test this code works also)
-                   - error rasing
-                   - shortening
-                '''
         if self.use_percentage_of_data < 0 or self.use_percentage_of_data > 1:
             raise Exception('use_percentage_of_data needs to be between 0 and 1')
         random.shuffle(self.images)

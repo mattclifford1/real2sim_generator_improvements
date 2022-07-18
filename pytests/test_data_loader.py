@@ -78,6 +78,21 @@ class test_data(unittest.TestCase):
         with self.assertRaises(Exception):
             x = l.image_handler(base_dir=self.dir, size=self.size, task=[])
 
+    def test_maybe_lower_data_size(self):
+        # extra test if the full data set is present - test if we can lower the data size
+        if os.path.isdir(os.path.join('..', 'data/Bourne/tactip', 'real', 'edge_2d', 'tap', 'csv_train')):
+            full_data = l.image_handler(base_dir='..', size=self.size)
+            assert len(full_data) == 5000
+            half_data = l.image_handler(base_dir='..', size=self.size, use_percentage_of_data=0.5)
+            assert len(half_data) == 2500
+            q_data = l.image_handler(base_dir='..', size=self.size, use_percentage_of_data=0.25)
+            assert len(q_data) == 1250
+            with self.assertRaises(Exception):
+                x = l.image_handler(base_dir='..', size=self.size, use_percentage_of_data=-1)
+            with self.assertRaises(Exception):
+                x = l.image_handler(base_dir='..', size=self.size, use_percentage_of_data=1.1)
+
+
 
 if __name__ == '__main__':
     unittest.main()

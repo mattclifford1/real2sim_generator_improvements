@@ -5,15 +5,6 @@ TODO:
 Trainer
 ===============================================
 - training:  lower learning rate/save best model based upon train MSE/loss not val SSIM
-
-
-* WAIT FOR TRAINING RESULTS: ---------
-- make GAN training identical to alexs
-  - same learning rate
-  - same decay
-  - same loss weights
-  -
-  - train and compare SSIM
 --------------------------------------
 
 - make a superclass of the trainers to work with single and multitask

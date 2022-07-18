@@ -39,7 +39,8 @@ class train_saver:
                        lr_decay,
                        batch_size,
                        task,
-                       save_name=''):
+                       save_name='',
+                       data_size=None):
         self.base_dir = base_dir
         self.task = task
         self.save_name = save_name
@@ -51,14 +52,19 @@ class train_saver:
         self.lr = lr
         self.lr_decay = lr_decay
         self.batch_size = batch_size
+        self.data_size = data_size
         self.get_save_dir()
 
     def get_save_dir(self):
         dir = os.path.join(self.base_dir, self.task[0], self.task[1], self.pretrained_name)
         name = self.save_name
-        name = name + 'LR:'+str(self.lr)
-        name = name +'_decay:'+str(self.lr_decay)
-        name = name +'_BS:'+str(self.batch_size)
+        name += 'LR:'+str(self.lr)
+        name += '_decay:'+str(self.lr_decay)
+        name += '_BS:'+str(self.batch_size)
+        print('pre')
+        if self.data_size is not None:
+            print('Changing')
+            name += '_DS:'+str(self.data_size)
         self.dir = os.path.join(dir, name)
         # find if there are previous runs
         run_name = 'run_'
