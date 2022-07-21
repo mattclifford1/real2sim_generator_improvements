@@ -24,6 +24,7 @@ from torchmetrics.functional import structural_similarity_index_measure as SSIM
 from trainers.data_loader import image_handler as image_loader
 from trainers.utils import train_saver, MyDataParallel
 from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
+from downstream_task.evaller import evaller
 
 
 class trainer():
@@ -37,7 +38,8 @@ class trainer():
                        lr_decay=0.1,
                        epochs=100,
                        shuffle_train=True,
-                       shuffle_val=False):
+                       shuffle_val=False,
+                       eval_downstream=False):
         self.dataset_train = dataset_train
         self.dataset_val = dataset_val
         self.shuffle_train = shuffle_train
@@ -49,6 +51,7 @@ class trainer():
         self.lr = lr
         self.lr_decay = lr_decay
         self.epochs = epochs
+        self.eval_downstream = eval_downstream
         # misc inits
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cores = multiprocessing.cpu_count()
@@ -99,6 +102,12 @@ class trainer():
         self.step_num = 0
         # set up model for training
         self.model = self.model.to(self.device)
+        if self.eval_downstream == True:
+            self.downstream_evaller = evaller(self.dir, data_task=list(self.dataset_val.task)+['real'],
+                                           model_task=list(self.dataset_val.task)+['sim'],
+                                           run=0,
+                                           store_ram=self.dataset_val.store_ram,
+                                           batch_size=max(1, int(self.batch_size/4)))
 
     def get_saver(self):
         # set up save logger for training graphs etc
@@ -199,10 +208,13 @@ class trainer():
         self.model.train()
         self.MSE = sum(MSEs) / len(MSEs)
         self.ssim = sum(SSIMs) / len(SSIMs)
+
         stats = {'epoch': [epoch],
                  'mean training loss': [np.mean(self.running_loss)],
                  'val MSE': [self.MSE],
                  'val_SSIM': [self.ssim]}
+        if self.eval_downstream is True:
+            stats['Downstream MAE'] =  [self.downstream_evaller.get_MAE(self.model)]
         self.saver.log_training_stats(stats)
         self.saver.log_val_images(ims, epoch)
         self.maybe_save_model()
@@ -241,6 +253,7 @@ if __name__ == '__main__':
     parser.add_argument("--multi_GPU", default=False, action='store_true', help='run on multiple gpus if available')
     parser.add_argument("--GAN", default=False, action='store_true', help='train against discriminator')
     parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
+    parser.add_argument("--eval_downstream", default=False, action='store_true', help='evaluate perforamnce on downstream task')
     ARGS = parser.parse_args()
 
     print('training on: ', ARGS.task)
@@ -272,5 +285,6 @@ if __name__ == '__main__':
                     save_dir=os.path.join(ARGS.dir, 'models', 'sim2real', 'matt'),
                     batch_size=ARGS.batch_size,
                     epochs=ARGS.epochs,
-                    lr=ARGS.lr)
+                    lr=ARGS.lr,
+                    eval_downstream=ARGS.eval_downstream)
     train.start()
