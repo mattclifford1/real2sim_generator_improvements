@@ -61,9 +61,7 @@ class train_saver:
         name += 'LR:'+str(self.lr)
         name += '_decay:'+str(self.lr_decay)
         name += '_BS:'+str(self.batch_size)
-        print('pre')
         if self.data_size is not None:
-            print('Changing')
             name += '_DS:'+str(self.data_size)
         self.dir = os.path.join(dir, name)
         # find if there are previous runs
