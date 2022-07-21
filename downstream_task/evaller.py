@@ -55,6 +55,7 @@ class evaller:
         self.model = m_128.network(final_size=int(self.model_task[0][-2]))
         model_file = os.path.join(self.model_dir, self.model_name)
         load_weights(self.model, model_file)
+        self.model.to(self.device)
         normalisation_file = os.path.join(self.model_dir, 'output_normilisation.json')
         with open(normalisation_file) as f:
             self.normalisation = json.load(f)
