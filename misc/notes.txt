@@ -32,10 +32,8 @@ Predict or input (surface, edge)
 Evaluation: Down stream task
 ===============================================
 Maybe outsource validation function to another file?
+- rm old sim2real models
 
-integrate  downstream evaluation into the trainer
-   -> implimented ... test it's working
-   -> update training times to reflect the extra eval
 
 
 Open question:
