@@ -12,6 +12,7 @@ from torchvision import transforms
 import torch
 import random
 import cv2
+from tqdm import tqdm
 
 '''
 Classes that transform the image data
