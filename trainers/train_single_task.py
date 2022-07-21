@@ -103,7 +103,7 @@ class trainer():
         # set up model for training
         self.model = self.model.to(self.device)
         if self.eval_downstream == True:
-            self.downstream_evaller = evaller(self.dir, data_task=list(self.dataset_val.task)+['real'],
+            self.downstream_evaller = evaller(self.dataset_val.base_dir, data_task=list(self.dataset_val.task)+['real'],
                                            model_task=list(self.dataset_val.task)+['sim'],
                                            run=0,
                                            store_ram=self.dataset_val.store_ram,
