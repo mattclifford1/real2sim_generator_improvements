@@ -97,9 +97,8 @@ class get_data:
                 self.labels[label] = np.interp(self.df[label].tolist(), self.labels_range[label], (-1,1))
 
     def load_images_to_ram(self):
-        print('Loading all images into RAM')
         self.images_in_ram = []
-        for image_path in self.image_paths:
+        for image_path in tqdm(self.image_paths, desc='Loading dataset into RAM', leave=False):
             self.images_in_ram.append(self.read_im(image_path))
 
     def read_im(self, image_path):
