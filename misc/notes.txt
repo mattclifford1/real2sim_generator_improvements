@@ -31,10 +31,10 @@ Predict or input (surface, edge)
 
 Evaluation: Down stream task
 ===============================================
-Get pose estimation task set up
-Train in the simulation space
-Easy Validation code
+integrate  downstream evaluation into the trainer
 
+
+Open question:
 - do we need different training set for real2sim and downstream tasks?
 
 

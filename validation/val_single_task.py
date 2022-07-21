@@ -24,18 +24,21 @@ from torchmetrics.functional import structural_similarity_index_measure as SSIM
 from trainers.data_loader import image_handler as image_loader
 from trainers.utils import train_saver, MyDataParallel, show_example_pred_ims
 from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
+from downstream_task.evaller import evaller
 
 
 class validater():
     def __init__(self,
                 dataset_val,
                 model,
+                downstream_eval=None,
                 batch_size=64,
                 shuffle_val=False,
                 show_ims=False):
         self.dataset_val = dataset_val
         self.shuffle_val = shuffle_val
         self.model = model
+        self.downstream_eval = downstream_eval
         self.batch_size = batch_size
         self.show_ims = show_ims
         # misc inits
@@ -47,7 +50,7 @@ class validater():
     def get_data_loader(self, prefetch_factor=1):
         cores = int(self.cores/2)
         self.torch_dataloader_val = DataLoader(self.dataset_val,
-                                     batch_size=max(1, int(self.batch_size/4)),
+                                     batch_size=self.batch_size,
                                      shuffle=self.shuffle_val,
                                      num_workers=cores,
                                      prefetch_factor=prefetch_factor)
@@ -83,11 +86,16 @@ class validater():
             elif self.show_ims == True:
                 show_example_pred_ims(ims)
                 ims = []
+            # if step == 1:
+            #     break
 
         self.MSE = sum(MSEs) / len(MSEs)
         self.ssim = sum(SSIMs) / len(SSIMs)
         stats = {'val MSE': [self.MSE],
-                 'val_SSIM': [self.ssim]}
+                 'val_SSIM': [self.ssim],
+                 }
+        if self.downstream_eval is not None:
+             stats['Downstream MAE'] =  [self.downstream_eval.get_MAE(self.model)]
 
         for key in stats.keys():
             print(key,': ',stats[key])
@@ -109,11 +117,18 @@ def run_val(dir='..',
     if ARGS.pretrained_model == False:
         generator.apply(weights_init_normal)
     else:
-        weights_init_pretrained(generator, ARGS.pretrained_model, name=ARGS.pretrained_name)
+        weights_init_pretrained(generator, pretrained_model, name=.pretrained_name)
+
+    downstream_eval = evaller(dir, data_task=task+['real'],
+                                   model_task=task+['sim'],
+                                   run=0,
+                                   store_ram=ram,
+                                   batch_size=max(1, int(batch_size/4)))
 
     v = validater(dataset_val,
                     generator,
-                    batch_size=ARGS.batch_size,
+                    downstream_eval,
+                    batch_size=max(1, int(batch_size/4)),
                     show_ims=show_ims)
     v.start()
 
