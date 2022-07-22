@@ -4,6 +4,7 @@ TODO:
 
 Trainer
 ===============================================
+--> try lowering LR with some decay to allow models to fine tune
 - training:  lower learning rate/save best model based upon train MSE/loss not val SSIM
 --------------------------------------
 
@@ -33,6 +34,7 @@ Evaluation: Down stream task
 ===============================================
 Maybe outsource validation function to another file?
 - rm old sim2real models
+
 
 
 
