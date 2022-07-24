@@ -1,5 +1,13 @@
 
 TODO:
+For Monday: eval:
+- add more metrics to val script
+- loop val over all models and save results
+- plot results? or table?
+- get example image pairs:
+  - good
+  - bad (ie edge when supposed to be surface)
+  - terrible (uninitalised weights etc.)
 
 
 Trainer

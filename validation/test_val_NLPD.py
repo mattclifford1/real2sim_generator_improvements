@@ -1,10 +1,3 @@
-'''
-Script to train UNet with adverserial training.
-Code adapted from Alex Churh's tactile_gym_sim2real repo
-
-Author: Matt Clifford
-Email: matt.clifford@bristol.ac.uk
-'''
 import os
 from argparse import ArgumentParser
 import sys; sys.path.append('..'); sys.path.append('.')
@@ -25,6 +18,7 @@ from trainers.data_loader import image_handler as image_loader
 from trainers.utils import train_saver, MyDataParallel, show_example_pred_ims
 from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
 from downstream_task.evaller import evaller
+from expert.pyramids import LaplacianPyramid
 
 
 class validater():
@@ -46,6 +40,9 @@ class validater():
         self.cores = multiprocessing.cpu_count()
         # get data loader
         self.get_data_loader(prefetch_factor=1)
+        self.NLPD = LaplacianPyramid(k=1)
+        self.NLPD.to(self.device)
+        self.MSEloss = nn.MSELoss()
 
     def get_data_loader(self, prefetch_factor=1):
         cores = int(self.cores/2)
@@ -63,7 +60,9 @@ class validater():
     def val_all(self):
         self.model.eval()
         MSEs = []
+        MSE_losses = []
         SSIMs = []
+        NLPDs = []
         ims_to_save = 5
         ims = []
         for step, sample in enumerate(tqdm(self.torch_dataloader_val, desc="Val Steps", leave=False)):
@@ -75,9 +74,15 @@ class validater():
             # get metrics
             mse = torch.square(pred_sim - im_sim).mean()
             MSEs.append(mse.cpu().detach().numpy())
+            mse_loss = self.MSEloss(pred_sim, im_sim)
+            MSE_losses.append(mse_loss.cpu().detach().numpy())
             ssim = SSIM(pred_sim, im_sim)
             SSIMs.append(ssim.cpu().detach().numpy())
-
+            # NLPD
+            pred_sim_3 = torch.cat([pred_sim, pred_sim, pred_sim], dim=1)
+            im_sim_3 = torch.cat([im_sim, im_sim, im_sim], dim=1)
+            nlpd = self.NLPD.compare(pred_sim_3, im_sim_3)
+            NLPDs.append(nlpd.cpu().detach().numpy())
             # store some ims to save to inspection
             if len(ims) < ims_to_save:
                 ims.append({'predicted': pred_sim[0,0,:,:],
@@ -86,12 +91,16 @@ class validater():
             elif self.show_ims == True:
                 show_example_pred_ims(ims)
                 ims = []
-            # if step == 1:
+            # if step == 3:
             #     break
 
         self.MSE = sum(MSEs) / len(MSEs)
-        self.ssim = sum(SSIMs) / len(SSIMs)
+        self.MSE_loss = sum(MSE_losses) / len(MSE_losses)
+        self.NLPD = sum(NLPDs) / len(MSE_losses)
+        self.ssim = sum(SSIMs) / len(NLPDs)
         stats = {'val MSE': [self.MSE],
+                 'val MSE loss': [self.MSE_loss],
+                 'val NLPD': [self.NLPD],
                  'val_SSIM': [self.ssim],
                  }
         if self.downstream_eval is not None:
