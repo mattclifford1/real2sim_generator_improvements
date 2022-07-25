@@ -1,0 +1,3 @@
+Using  28  CPU cores
+Loaded pretrained model from: /user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[surface_3d]/128x128_[shear]_250epochs/checkpoints/best_generator.pth
+Using  28  CPU cores
