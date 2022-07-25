@@ -15,4 +15,4 @@ time="0-1:30"
 # run=1
 # sbatch -t $time -J $job_name$run -o $dir$run'.out' -e $dir$run'.err' --mem=$ram server/submit_job.sh python validation/val_from_list.py --batch_size $batch --dir $data_dir --task $task --run $run
 run=2
-sbatch -t $time -J $job_name$run -o $dir$run'.out' -e $dir$run'.err' --mem=$ram server/submit_job.sh python validation/val_from_list.py --batch_size $batch --dir $data_dir --task $task --run $run
+sbatch -t $time -J $job_name$run -o $dir$run'.out' -e $dir$run'.err' --mem=$ram server/submit_job.sh python validation/val_from_list.py --batch_size $batch_size --dir $data_dir --task $task --run $run
