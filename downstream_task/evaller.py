@@ -20,7 +20,6 @@ def load_weights(model, weights_path):
     if not os.path.isfile(weights_path):
         # raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), weights_path)
         raise ValueError("Couldn't find network weights path: "+str(weights_path)+"\nMaybe you need to train first?")
-    print(device)
     model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
 
 
@@ -73,8 +72,8 @@ class evaller:
     def get_MAE(self, real2sim_model=None):
         MAEs = []
         for step, sample in enumerate(tqdm(self.data_loader, desc="Downstream Val Steps", leave=False)):
-            # if step == 1:
-            #     break
+            if step == 1:
+                break
             # get val batch sample
             im = sample['image'].to(device=self.device, dtype=torch.float)
             label = sample['label'].to(device=self.device, dtype=torch.float)

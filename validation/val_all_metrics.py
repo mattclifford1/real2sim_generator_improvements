@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+import gc
 import sys; sys.path.append('..'); sys.path.append('.')
 import numpy as np
 import torch
@@ -8,11 +9,12 @@ from torch.utils.data import Dataset, DataLoader
 
 from tqdm import tqdm
 import multiprocessing
-# from torchmetrics.functional import structural_similarity_index_measure as SSIM
-from torchmetrics import StructuralSimilarityIndexMeasure as SSIM
-from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure as MSSIM
+from torchmetrics.functional import structural_similarity_index_measure as SSIM
+# from torchmetrics import StructuralSimilarityIndexMeasure as SSIM   # get GPU memory overflow if using this version.... :/
+from torchmetrics.functional import multiscale_structural_similarity_index_measure as MSSIM
 from torchmetrics import PeakSignalNoiseRatio as PSNR
-from torchmetrics import UniversalImageQualityIndex as UIQI
+# from torchmetrics import UniversalImageQualityIndex as UIQI
+from torchmetrics.functional import universal_image_quality_index as UIQI
 from torchmetrics import SpectralDistortionIndex as SDI
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity as LPIPS
 
@@ -58,7 +60,7 @@ class validater():
         self.get_similarity_metrics()
 
     def get_data_loader(self, prefetch_factor=1):
-        cores = int(self.cores/2)
+        cores = max(1, int(self.cores/2))
         self.torch_dataloader_val = DataLoader(self.dataset_val,
                                      batch_size=self.batch_size,
                                      shuffle=self.shuffle_val,
@@ -70,14 +72,14 @@ class validater():
         # eg: score = self.metrics['xx'](im1, im2)
         self.metrics = {}
         self.metrics['MSE'] = nn.MSELoss()
-        self.metrics['SSIM'] = SSIM()
-        # self.metrics['MSSIM'] = MSSIM()
-        self.metrics['PSNR'] = PSNR().to(self.device)
-        self.metrics['UIQI'] = UIQI()#.to(self.device)
-        # self.metrics['SDI'] = SDI()#.to(self.device) # give nan
-        self.metrics['LPIPS_alex'] = grey_to_3_channel_input(LPIPS(net_type='alex').to(self.device))
-        self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
+        self.metrics['SSIM'] = SSIM
         self.metrics['NLPD'] = LaplacianPyramid(k=1).to(self.device)
+        # self.metrics['MSSIM'] = MSSIM    # not compatable with 128x128 images
+        self.metrics['PSNR'] = PSNR().to(self.device)
+        self.metrics['UIQI'] = UIQI
+        # self.metrics['SDI'] = SDI() # gives nan
+        # self.metrics['LPIPS_alex'] = grey_to_3_channel_input(LPIPS(net_type='alex').to(self.device))
+        self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
         # self.metrics['NLPD_2'] = LaplacianPyramid(k=2).to(self.device)
         # self.metrics['NLPD_3'] = LaplacianPyramid(k=3).to(self.device)
 
@@ -99,6 +101,7 @@ class validater():
             # get metrics
             for key in self.metrics.keys():
                 _score = self.metrics[key](im_sim, pred_sim)
+                # _score = self.metrics[key](im_sim.cpu(), pred_sim.cpu())
                 _scores[key].append(_score.cpu().detach().numpy())
 
             # store some ims to save to inspection
@@ -111,7 +114,7 @@ class validater():
             #     ims = []
 
             # uncomment below when developing code
-            if step == 3:
+            if step == 1:
                 break
 
 
@@ -121,27 +124,24 @@ class validater():
             stats[key] = sum(_scores[key]) / len(_scores[key])
 
         # evaluate on downstream task (outside of main loops as requires a diff data loader to get y labels)
-        # if self.downstream_eval is not None:
-        #      stats['Downstream MAE'] =  [self.downstream_eval.get_MAE(self.model)]
+        if self.downstream_eval is not None:
+             stats['Downstream MAE'] =  self.downstream_eval.get_MAE(self.model)
 
-        for key in stats.keys():
-            print(key,': ',stats[key])
-
+        self.stats = stats
         # self.saver.log_training_stats(stats)
         # self.saver.log_val_images(ims, epoch)
 
 def run_val(dir='..',
             task=['edge_2d', 'tap'],
-            batch_size=64,
+            batch_size=32,
             pretrained_model=False,
             pretrained_name='test',
             ram=False,
             show_ims=False):
-    print('validating on: ', task)
     dataset_val = image_loader(base_dir=dir, val=True, task=task, store_ram=ram)
     generator = GeneratorUNet(in_channels=1, out_channels=1)
 
-    if ARGS.pretrained_model == False:
+    if pretrained_model == False:
         generator.apply(weights_init_normal)
     else:
         weights_init_pretrained(generator, pretrained_model, name=pretrained_name)
@@ -158,22 +158,33 @@ def run_val(dir='..',
                     batch_size=max(1, int(batch_size/4)),
                     show_ims=show_ims)
     v.start()
+    stats = v.stats
+
+    # avoid memory overflow by clearing VRAM
+    if torch.cuda.is_available():
+        del v
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    return stats
 
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Test data with GAN models')
     parser.add_argument("--dir", default='..', help='path to folder where data and models are held')
     parser.add_argument("--task", type=str, nargs='+', default=['surface_3d', 'shear'], help='dataset to train on')
-    parser.add_argument("--batch_size",type=int,  default=64, help='batch size to load and train on')
+    parser.add_argument("--batch_size",type=int,  default=32, help='batch size to load and train on')
     parser.add_argument("--pretrained_model", default=False, help='path to model to load pretrained weights on')
     parser.add_argument("--pretrained_name", default='test', help='name to refer to the pretrained model')
     parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
     parser.add_argument("--show_ims", default=False, action='store_true', help='show some example images')
     ARGS = parser.parse_args()
-    run_val(dir=ARGS.dir,
+    stats = run_val(dir=ARGS.dir,
                 task=ARGS.task,
                 batch_size=ARGS.batch_size,
                 pretrained_model=ARGS.pretrained_model,
                 pretrained_name=ARGS.pretrained_name,
                 ram=ARGS.ram,
                 show_ims=ARGS.show_ims)
+    for key in stats.keys():
+        print(key,': ',stats[key])
