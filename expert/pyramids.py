@@ -110,7 +110,12 @@ class LaplacianPyramid(nn.Module):
             J = I
         return pyr
 
-    def compare(self, x1, x2):
+    def forward(self, x1, x2):
+        # make inputs 3 channel if greyscale
+        if x1.shape[1] == 1:
+            x1 = torch.cat([x1, x1, x1], dim=1)
+        if x2.shape[1] == 1:
+            x2 = torch.cat([x2, x2, x2], dim=1)
         y1 = self.pyramid(x1)
         y2 = self.pyramid(x2)
         total = []

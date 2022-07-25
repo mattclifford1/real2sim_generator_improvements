@@ -1,7 +1,7 @@
 
 TODO:
 For Monday: eval:
-- add more metrics to val script
+- training graphs for data size reduction
 - loop val over all models and save results
 - plot results? or table?
 - get example image pairs:
@@ -18,11 +18,9 @@ Trainer
 
 - make a superclass of the trainers to work with single and multitask
 
-- reduce the amount of data to use option on data loaders
 - choose what weights are trainable
 
-- Add NLPD loss
-- Add SSIM loss
+- other losses -> NLPD / etc.   (get insights from metric's image comparisions to downstream task)
 
 
 

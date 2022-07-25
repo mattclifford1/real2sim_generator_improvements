@@ -4,21 +4,36 @@ import sys; sys.path.append('..'); sys.path.append('.')
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
-from torch.optim.lr_scheduler import ExponentialLR, StepLR
 
 from tqdm import tqdm
 import multiprocessing
-from torchmetrics.functional import structural_similarity_index_measure as SSIM
+# from torchmetrics.functional import structural_similarity_index_measure as SSIM
+from torchmetrics import StructuralSimilarityIndexMeasure as SSIM
+from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure as MSSIM
+from torchmetrics import PeakSignalNoiseRatio as PSNR
+from torchmetrics import UniversalImageQualityIndex as UIQI
+from torchmetrics import SpectralDistortionIndex as SDI
+from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity as LPIPS
 
 from trainers.data_loader import image_handler as image_loader
-from trainers.utils import train_saver, MyDataParallel, show_example_pred_ims
-from gan_models.models_128 import GeneratorUNet, Discriminator, weights_init_normal, weights_init_pretrained
+from trainers.utils import show_example_pred_ims
+from gan_models.models_128 import GeneratorUNet, weights_init_normal, weights_init_pretrained
 from downstream_task.evaller import evaller
 from expert.pyramids import LaplacianPyramid
+
+class grey_to_3_channel_input():
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, x1, x2):
+        # make inputs 3 channel if greyscale
+        if x1.shape[1] == 1:
+            x1 = torch.cat([x1, x1, x1], dim=1)
+        if x2.shape[1] == 1:
+            x2 = torch.cat([x2, x2, x2], dim=1)
+        return self.func(x1, x2)
+
 
 
 class validater():
@@ -40,9 +55,7 @@ class validater():
         self.cores = multiprocessing.cpu_count()
         # get data loader
         self.get_data_loader(prefetch_factor=1)
-        self.NLPD = LaplacianPyramid(k=1)
-        self.NLPD.to(self.device)
-        self.MSEloss = nn.MSELoss()
+        self.get_similarity_metrics()
 
     def get_data_loader(self, prefetch_factor=1):
         cores = int(self.cores/2)
@@ -52,19 +65,31 @@ class validater():
                                      num_workers=cores,
                                      prefetch_factor=prefetch_factor)
 
+    def get_similarity_metrics(self):
+        # dictionary of callable metric functions
+        # eg: score = self.metrics['xx'](im1, im2)
+        self.metrics = {}
+        self.metrics['MSE'] = nn.MSELoss()
+        self.metrics['SSIM'] = SSIM()
+        # self.metrics['MSSIM'] = MSSIM()
+        self.metrics['PSNR'] = PSNR().to(self.device)
+        self.metrics['UIQI'] = UIQI()#.to(self.device)
+        # self.metrics['SDI'] = SDI()#.to(self.device) # give nan
+        self.metrics['LPIPS_alex'] = grey_to_3_channel_input(LPIPS(net_type='alex').to(self.device))
+        self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
+        self.metrics['NLPD'] = LaplacianPyramid(k=1).to(self.device)
+        # self.metrics['NLPD_2'] = LaplacianPyramid(k=2).to(self.device)
+        # self.metrics['NLPD_3'] = LaplacianPyramid(k=3).to(self.device)
+
     def start(self):
         self.model = self.model.to(self.device)
         self.model.eval()
-        self.val_all()
-
-    def val_all(self):
-        self.model.eval()
-        MSEs = []
-        MSE_losses = []
-        SSIMs = []
-        NLPDs = []
-        ims_to_save = 5
-        ims = []
+        # ims_to_save = 5
+        # ims = []
+        # initialise lists to hold metric's scores
+        _scores = {}
+        for key in self.metrics.keys():
+            _scores[key] = []
         for step, sample in enumerate(tqdm(self.torch_dataloader_val, desc="Val Steps", leave=False)):
             # get val batch sample
             im_real = sample['real'].to(device=self.device, dtype=torch.float)
@@ -72,39 +97,32 @@ class validater():
             # forward
             pred_sim = self.model(im_real)
             # get metrics
-            mse = torch.square(pred_sim - im_sim).mean()
-            MSEs.append(mse.cpu().detach().numpy())
-            mse_loss = self.MSEloss(pred_sim, im_sim)
-            MSE_losses.append(mse_loss.cpu().detach().numpy())
-            ssim = SSIM(pred_sim, im_sim)
-            SSIMs.append(ssim.cpu().detach().numpy())
-            # NLPD
-            pred_sim_3 = torch.cat([pred_sim, pred_sim, pred_sim], dim=1)
-            im_sim_3 = torch.cat([im_sim, im_sim, im_sim], dim=1)
-            nlpd = self.NLPD.compare(pred_sim_3, im_sim_3)
-            NLPDs.append(nlpd.cpu().detach().numpy())
-            # store some ims to save to inspection
-            if len(ims) < ims_to_save:
-                ims.append({'predicted': pred_sim[0,0,:,:],
-                            'simulated': im_sim[0,0,:,:],
-                            'real': im_real[0,0,:,:]})
-            elif self.show_ims == True:
-                show_example_pred_ims(ims)
-                ims = []
-            # if step == 3:
-            #     break
+            for key in self.metrics.keys():
+                _score = self.metrics[key](im_sim, pred_sim)
+                _scores[key].append(_score.cpu().detach().numpy())
 
-        self.MSE = sum(MSEs) / len(MSEs)
-        self.MSE_loss = sum(MSE_losses) / len(MSE_losses)
-        self.NLPD = sum(NLPDs) / len(MSE_losses)
-        self.ssim = sum(SSIMs) / len(NLPDs)
-        stats = {'val MSE': [self.MSE],
-                 'val MSE loss': [self.MSE_loss],
-                 'val NLPD': [self.NLPD],
-                 'val_SSIM': [self.ssim],
-                 }
-        if self.downstream_eval is not None:
-             stats['Downstream MAE'] =  [self.downstream_eval.get_MAE(self.model)]
+            # store some ims to save to inspection
+            # if len(ims) < ims_to_save:
+            #     ims.append({'predicted': pred_sim[0,0,:,:],
+            #                 'simulated': im_sim[0,0,:,:],
+            #                 'real': im_real[0,0,:,:]})
+            # elif self.show_ims == True:
+            #     show_example_pred_ims(ims)
+            #     ims = []
+
+            # uncomment below when developing code
+            if step == 3:
+                break
+
+
+        # Calculate mean of scores
+        stats = {}
+        for key in self.metrics.keys():
+            stats[key] = sum(_scores[key]) / len(_scores[key])
+
+        # evaluate on downstream task (outside of main loops as requires a diff data loader to get y labels)
+        # if self.downstream_eval is not None:
+        #      stats['Downstream MAE'] =  [self.downstream_eval.get_MAE(self.model)]
 
         for key in stats.keys():
             print(key,': ',stats[key])
