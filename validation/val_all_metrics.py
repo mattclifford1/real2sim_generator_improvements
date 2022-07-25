@@ -144,7 +144,7 @@ def run_val(dir='..',
     if pretrained_model == False:
         generator.apply(weights_init_normal)
     else:
-        weights_init_pretrained(generator, pretrained_model, name=pretrained_name)
+        weights_init_pretrained(generator, pretrained_model, name=pretrained_name, verbose=False)
 
     downstream_eval = evaller(dir, data_task=task+['real'],
                                    model_task=task+['sim'],

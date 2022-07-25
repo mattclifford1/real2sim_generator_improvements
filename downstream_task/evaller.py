@@ -72,8 +72,6 @@ class evaller:
     def get_MAE(self, real2sim_model=None):
         MAEs = []
         for step, sample in enumerate(tqdm(self.data_loader, desc="Downstream Val Steps", leave=False)):
-            # if step == 1:
-            #     break
             # get val batch sample
             im = sample['image'].to(device=self.device, dtype=torch.float)
             label = sample['label'].to(device=self.device, dtype=torch.float)
@@ -81,6 +79,9 @@ class evaller:
                 # shift domain from real to simulation
                 im = real2sim_model(im)
             MAEs.append(self._get_MAE_batch(im, label))
+            # uncomment below when developing code
+            # if step == 1:
+            #     break
         return sum(MAEs) / len(MAEs)
 
 

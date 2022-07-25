@@ -1,8 +1,15 @@
 import os
 from argparse import ArgumentParser
 import pandas as pd
+from tqdm import tqdm
 import sys; sys.path.append('..'); sys.path.append('.')
 from validation.val_all_metrics import run_val
+
+def save_df(results, task, location='validation/models_evaluation_on_'):
+    df = pd.DataFrame.from_dict(results)
+    df.to_csv(location+task[0]+'_'+task[1]+'.csv', index=False)
+
+
 
 parser = ArgumentParser(description='')
 parser.add_argument("--dir", default='..', help='path to folder where training graphs are within')
@@ -43,7 +50,7 @@ models = {
 task = ['surface_3d', 'shear']
 results = {}
 init_keys = False
-for key in models.keys():
+for key in tqdm(models.keys(), desc='All models'):
     stats = run_val(ARGS.dir, task, ARGS.batch_size, models[key], ram=ARGS.ram)
     if init_keys is False:
         results['name'] = [key]
@@ -54,7 +61,4 @@ for key in models.keys():
         results['name'].append(key)
         for k in stats.keys():
             results[k].append(stats[k])
-
-df = pd.DataFrame.from_dict(results)
-print(df)
-df.to_csv('validation/models_evaluation_on_'+task[0]+'_'+task[1]+'.csv', index=False)
+    save_df(results, task)

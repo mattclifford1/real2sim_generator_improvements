@@ -38,24 +38,24 @@ if __name__ == '__main__':
         # 'pretrained[et] surface shear GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine, 'run_0', 'training_stats.csv'),
 
         # '''not pretrained - limited data'''
-        'surface shear '+str(data_limits[0]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[0]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[1]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[1]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[2]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[3]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[3]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[4]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[4]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[5]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[5]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[6]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[6]), 'run_0', 'training_stats.csv'),
-        'surface shear '+str(data_limits[7]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[0]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[0]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[1]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[1]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[2]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[3]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[3]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[4]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[4]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[5]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[5]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[6]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[6]), 'run_0', 'training_stats.csv'),
+        # 'surface shear '+str(data_limits[7]): os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7]), 'run_0', 'training_stats.csv'),
 
         # '''pretrained - limited data'''
-        # '[et]surface shear '+str(data_limits[0]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[0]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[1]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[1]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[2]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[3]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[3]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[4]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[4]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[5]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[5]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[6]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[6]), 'run_0', 'training_stats.csv'),
-        # '[et]surface shear '+str(data_limits[7]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[0]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[0]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[1]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[1]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[2]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[3]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[3]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[4]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[4]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[5]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[5]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[6]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[6]), 'run_0', 'training_stats.csv'),
+        '[et]surface shear '+str(data_limits[7]): os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7]), 'run_0', 'training_stats.csv'),
 
 
 

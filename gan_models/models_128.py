@@ -11,10 +11,11 @@ def weights_init_normal(model):
         torch.nn.init.constant_(model.bias.data, 0.0)
     model.init_weights_from = 'not_pretrained'
 
-def weights_init_pretrained(model, weights_path, name):
+def weights_init_pretrained(model, weights_path, name, verbose=True):
     model.load_state_dict(torch.load(weights_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
     model.init_weights_from = 'pretrained_'+name
-    print('Loaded pretrained model from: '+weights_path)
+    if verbose is True:
+        print('Loaded pretrained model from: '+weights_path)
 
 
 
