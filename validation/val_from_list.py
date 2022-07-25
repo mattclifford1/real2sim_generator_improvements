@@ -5,9 +5,9 @@ from tqdm import tqdm
 import sys; sys.path.append('..'); sys.path.append('.')
 from validation.val_all_metrics import run_val
 
-def save_df(results, task, location='validation/models_evaluation_on_'):
+def save_df(results, task, run, location='validation/models_evaluation_on_'):
     df = pd.DataFrame.from_dict(results)
-    df.to_csv(location+task[0]+'_'+task[1]+'.csv', index=False)
+    df.to_csv(location+task[0]+'_'+task[1]+'_'+run+'.csv', index=False)
 
 
 
@@ -62,4 +62,4 @@ for key in tqdm(models.keys(), desc='All models'):
         results['name'].append(key)
         for k in stats.keys():
             results[k].append(stats[k])
-    save_df(results, task)
+    save_df(results, task, run)
