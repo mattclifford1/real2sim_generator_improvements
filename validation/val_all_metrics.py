@@ -114,8 +114,8 @@ class validater():
             #     ims = []
 
             # uncomment below when developing code
-            if step == 1:
-                break
+            # if step == 1:
+            #     break
 
 
         # Calculate mean of scores
