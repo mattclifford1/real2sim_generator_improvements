@@ -3,6 +3,9 @@
 no_git_data
 pytests/models
 
+# bc4 files
+/server/outputs
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

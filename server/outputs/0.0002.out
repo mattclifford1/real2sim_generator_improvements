@@ -1,8 +1,0 @@
-training on:  ['surface_3d', 'shear']
-Loaded pretrained model from: /user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs/checkpoints/best_generator.pth
-Using  28  CPU cores
-cuda
-training on:  ['surface_3d', 'shear']
-Loaded pretrained model from: /user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs/checkpoints/best_generator.pth
-Using  28  CPU cores
-cuda

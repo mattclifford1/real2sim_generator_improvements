@@ -1,9 +1,0 @@
-training on:  ['edge_2d', 'shear']
-Using  28  CPU cores
-Learning rate:  [1e-05]
-Learning rate:  [1e-05]
-Learning rate:  [1.0000000000000002e-06]
-Learning rate:  [1.0000000000000002e-06]
-Learning rate:  [1.0000000000000002e-07]
-Learning rate:  [1.0000000000000004e-08]
-Learning rate:  [1.0000000000000005e-09]
