@@ -14,6 +14,8 @@ def save_df(results, task, run, location='validation/models_evaluation_on_'):
 parser = ArgumentParser(description='')
 parser.add_argument("--dir", default='..', help='path to folder where training graphs are within')
 parser.add_argument("--batch_size",type=int,  default=32, help='batch size to load and train on')
+parser.add_argument("--run",type=int,  default=0, help='training run to use')
+parser.add_argument("--task", type=str, nargs='+', default=['edge_2d', 'tap'], help='dataset to train on')
 parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
 ARGS = parser.parse_args()
 
@@ -23,7 +25,7 @@ base_dir = os.path.join(ARGS.dir, 'models', 'sim2real', 'matt')
 pretrained = 'pretrained_edge_tap'
 train_routine = 'LR:0.0002_decay:0.1_BS:64'
 data_limits = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]
-run = 'run_2'
+run = 'run_'+str(ARGS.run)
 models = {
     # '''not pretrained - limited data'''
     'surface shear '+str(data_limits[0]): os.path.join(base_dir, 'surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[0]), run, 'models', 'best_generator.pth'),
@@ -48,11 +50,10 @@ models = {
     'edge tap [pre-net] ': os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs/checkpoints/best_generator.pth'),
 }
 
-task = ['surface_3d', 'shear']
 results = {}
 init_keys = False
 for key in tqdm(models.keys(), desc='All models'):
-    stats = run_val(ARGS.dir, task, ARGS.batch_size, models[key], ram=ARGS.ram)
+    stats = run_val(ARGS.dir, ARGS.task, ARGS.batch_size, models[key], ram=ARGS.ram)
     if init_keys is False:
         results['name'] = [key]
         for k in stats.keys():
@@ -62,4 +63,4 @@ for key in tqdm(models.keys(), desc='All models'):
         results['name'].append(key)
         for k in stats.keys():
             results[k].append(stats[k])
-    save_df(results, task, run)
+    save_df(results, ARGS.task, run)
