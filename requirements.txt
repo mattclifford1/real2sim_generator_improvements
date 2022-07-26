@@ -7,3 +7,4 @@ matplotlib
 torchmetrics
 lpips
 pandas
+PyQt5

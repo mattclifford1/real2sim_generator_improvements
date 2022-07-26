@@ -1,0 +1,22 @@
+todo:
+
+- change to pyqt6
+
+- image loading back end
+  - how to store current images
+  - preprocess images (button?)
+  - copy image over
+
+- image augmentation
+  - contrast
+  - saturation
+  - zoom
+  - rotation
+  - etc?
+
+
+- scroll through image folder
+
+
+- run evaluation
+  - how to choose what metrics? (checkboxes?)
