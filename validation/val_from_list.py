@@ -5,7 +5,7 @@ from tqdm import tqdm
 import sys; sys.path.append('..'); sys.path.append('.')
 from validation.val_all_metrics import run_val
 
-def save_df(results, task, run, location='validation/models_evaluation_on_'):
+def save_df(results, task, run, location='validation/results/models_evaluation_on_'):
     df = pd.DataFrame.from_dict(results)
     df.to_csv(location+task[0]+'_'+task[1]+'_'+run+'.csv', index=False)
 
