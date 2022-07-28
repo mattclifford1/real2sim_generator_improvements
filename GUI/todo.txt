@@ -2,10 +2,15 @@ todo:
 
 - change to pyqt6
 
+- open images from csv dataframe so we have pose data too
+
+- select what networks to use
+  - pose
+  - real2sim
+
 - image loading back end
-  - how to store current images
-  - preprocess images (button?)
-  - copy image over
+  - real2sim estimation
+  - copy button
 
 - image augmentation
   - contrast
