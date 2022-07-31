@@ -16,7 +16,7 @@ todo:
   - contrast
   - saturation
   - zoom
-  - rotation
+  - rotation around point from click
   - etc?
 
 
@@ -25,3 +25,17 @@ todo:
 
 - run evaluation
   - how to choose what metrics? (checkboxes?)
+
+
+- INFO
+  - what image frame using
+  - what dataset using
+
+  - button to save ims with metrics to file
+
+
+
+
+NOTES:
+only works with PyQt5==5.14.2 on X.org display server weirdly not latest version
+(use wayland?)

@@ -2,8 +2,9 @@ from skimage.transform import resize
 from skimage.util import img_as_ubyte
 import cv2
 import numpy as np
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import qApp
+from PyQt6.QtGui import QPixmap, QImage
+# from PyQt5.QtWidgets import qApp
+from PyQt6.QtWidgets import QApplication
 
 '''
 image helper functions
@@ -24,10 +25,12 @@ def change_im(widget, im, resize=False, return_qimage=False):
                     im.shape[1],
                     im.shape[0],
                     im.shape[1]*im.shape[2],
-                    QImage.Format_RGB888)
+                    QImage.Format.Format_RGB888)
+                    # QImage.Format_RGB888)  # PyQt5
     pixmap = QPixmap(qimage)
     widget.setPixmap(pixmap)
-    qApp.processEvents()   # force to change other UI wont respond
+    # qApp.processEvents()   # force to change other UI wont respond
+    QApplication.processEvents()   # force to change other UI wont respond
     if return_qimage:
         return qimage
 

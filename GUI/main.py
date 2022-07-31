@@ -4,16 +4,17 @@ import threading
 import time
 import pickle
 import os
+import pandas as pd
 
 import cv2
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QAction, QLineEdit, QMenu, QFileDialog, QPushButton, QGridLayout, QLabel, QSlider, QComboBox, qApp
-from PyQt5.QtGui import QPixmap, QImage, QColor
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QLineEdit, QMenu, QFileDialog, QPushButton, QGridLayout, QLabel, QSlider, QComboBox
+# from PyQt6.QtGui import QImage, QColor
+from PyQt6.QtCore import Qt
 
-from PyQt5.QtGui import QPainter, QBrush
-from PyQt5.QtWidgets import QStyle, QStyleOptionSlider
-from PyQt5.QtCore import QRect, QPoint, Qt
+from PyQt6.QtGui import QPainter, QBrush
+from PyQt6.QtWidgets import QStyle, QStyleOptionSlider
+from PyQt6.QtCore import QRect, QPoint, Qt
 
 import sys; sys.path.append('..'); sys.path.append('.')
 from gui_utils import change_im, load_image
@@ -25,13 +26,12 @@ class make_app(QMainWindow):
         super().__init__()
         self.args = args
         self.app = app
-        self.set_window()
+        # self.set_window()
         self.init_images()
         self.init_widgets()
         self.init_layout()
         self.image_display_size = (256, 256)
         self.display_images()
-
 
     def set_window(self):
         '''
@@ -58,20 +58,24 @@ class make_app(QMainWindow):
             self.height = int(256)
         self.width = int(self.height*self.width_ratio)
 
-        if os.path.exists(self.args.image_path):
-            self.im_reference = load_image(self.args.image_path)
-            self.im_compare = load_image(self.args.image_path)
-        else:
-            self.im_reference = np.zeros([128, 128, 1], dtype=np.uint8)
-            self.im_compare = np.zeros([128, 128, 1], dtype=np.uint8)
-
         # set up ims and click functions
         self.im_Qlabels = {'im_reference':QLabel(self),
-                           'im_compare':QLabel(self),
-                           # 'im_diff':QLabel(self)
-                           }
-        self.im_Qlabels['im_reference'].setAlignment(Qt.AlignLeft)
-        self.im_Qlabels['im_compare'].setAlignment(Qt.AlignRight)
+        'im_compare':QLabel(self),
+        # 'im_diff':QLabel(self)
+        }
+        self.im_Qlabels['im_reference'].setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.im_Qlabels['im_compare'].setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # load images
+        if os.path.exists(self.args.image_path):
+            self.im_compare = load_image(self.args.image_path)
+        else:
+            self.im_compare = np.zeros([128, 128, 1], dtype=np.uint8)
+        if os.path.exists(self.args.csv_path):
+            self.load_dataset(self.args.csv_path)
+        else:
+            self.im_reference = np.zeros([128, 128, 1], dtype=np.uint8)
+
         # self.im_Qlabels['colour_output'].mousePressEvent = self.image_click
         # hold video frames
         # dummy_frame = [self.dummy_im]*2
@@ -84,24 +88,57 @@ class make_app(QMainWindow):
         create all the widgets we need and init params
         '''
         # load images
-        self.button_image1 = QPushButton('Choose Image 1', self)
-        self.button_image1.clicked.connect(self.choose_image_reference)
-        self.button_image2 = QPushButton('Choose Image 2', self)
-        self.button_image2.clicked.connect(self.choose_image_compare)
-        # sliders
-        self.slider_rotation = QSlider(Qt.Horizontal)
+        self.button_dataset_load = QPushButton('Choose Dataset', self)
+        self.button_dataset_load.clicked.connect(self.choose_dataset)
+        self.button_prev = QPushButton('<', self)
+        self.button_prev.clicked.connect(self.load_prev_image)
+        self.button_next = QPushButton('>', self)
+        self.button_next.clicked.connect(self.load_next_image)
+        # self.button_image2 = QPushButton('Choose Image 2', self)
+        # self.button_image2.clicked.connect(self.choose_image_compare)
+        '''sliders'''
+        # rotation
+        self.slider_rotation = QSlider(Qt.Orientation.Horizontal)
         self.slider_rotation.setMinimum(-180)
         self.slider_rotation.setMaximum(180)
-        self.slider_rotation.sliderReleased.connect(self.rotate_image)
+        self.slider_rotation.valueChanged.connect(self.rotate_image)
+        self.slider_rotation.sliderReleased.connect(self.display_images)
         self.angle_to_rotate = 0
         self.slider_rotation.setValue(self.angle_to_rotate)
-
-        self.slider_blur = QSlider(Qt.Horizontal)
+        self.label_rotation = QLabel(self)
+        self.label_rotation.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.label_rotation.setText('Rotation:')
+        self.label_rotation_value = QLabel(self)
+        self.label_rotation_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.label_rotation_value.setText(str(self.angle_to_rotate))
+        # guassian blur
+        self.slider_blur = QSlider(Qt.Orientation.Horizontal)
         self.slider_blur.setMinimum(0)
-        self.slider_blur.setMaximum(25)
-        self.slider_blur.sliderReleased.connect(self.blur_image)
+        self.slider_blur.setMaximum(50)
+        self.slider_blur.valueChanged.connect(self.blur_image)
+        self.slider_blur.sliderReleased.connect(self.display_images)
         self.guassian_blur_kernel_size = 0
         self.slider_blur.setValue(self.guassian_blur_kernel_size)
+        self.label_blur = QLabel(self)
+        self.label_blur.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.label_blur.setText('Blur:')
+        self.label_blur_value = QLabel(self)
+        self.label_blur_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.label_blur_value.setText(str(self.guassian_blur_kernel_size))
+        # brightness
+        self.slider_brightness = QSlider(Qt.Orientation.Horizontal)
+        self.slider_brightness.setMinimum(-127)
+        self.slider_brightness.setMaximum(127)
+        self.slider_brightness.valueChanged.connect(self.brightness_image)
+        self.slider_brightness.sliderReleased.connect(self.display_images)
+        self.brightness_adjustment = 0
+        self.slider_brightness.setValue(self.brightness_adjustment)
+        self.label_brightness = QLabel(self)
+        self.label_brightness.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.label_brightness.setText('Brightness:')
+        self.label_brightness_value = QLabel(self)
+        self.label_brightness_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.label_brightness_value.setText(str(self.brightness_adjustment))
 
     def init_layout(self):
         '''
@@ -113,40 +150,77 @@ class make_app(QMainWindow):
         self.main_widget.setLayout(self.layout)
         self.setCentralWidget(self.main_widget)
         # sizes
-        im_width = 6
-        im_height = 6
+        im_width = 20
+        im_height = 20
         button = 1
-        slider_width = 3
+        slider_width = 10
         # horizonal start values
         start_im = 0
         start_controls = im_width*2
-        start_sliders = 3
 
-        # load files
-        self.layout.addWidget(self.button_image1, 0, start_controls, button, button)
-        self.layout.addWidget(self.button_image2, 1, start_controls, button, button)
         # display images
         self.layout.addWidget(self.im_Qlabels['im_reference'], start_im, start_im,   im_height, im_width)
         self.layout.addWidget(self.im_Qlabels['im_compare'],   start_im, im_width,   im_height, im_width)
         # self.layout.addWidget(self.im_Qlabels['im_diff'], im_height+1, im_width//2, im_height//2, im_width//2)
-        self.layout.addWidget(self.slider_rotation,            3       , im_width*2, button,    slider_width)
-        self.layout.addWidget(self.slider_blur,            4       , im_width*2, button,    slider_width)
+
+        # load files
+        self.layout.addWidget(self.button_prev, im_height, 0, 1, 1)
+        # self.layout.addWidget(self.button_dataset_load, im_height, 1, 1, 1)
+        self.layout.addWidget(self.button_next, im_height, im_width-1, 1, 1)
+
+        # sliders
+        self.layout.addWidget(self.slider_rotation,   button*3, start_controls+button, button, slider_width)
+        self.layout.addWidget(self.label_rotation,    button*3, start_controls,   button, button)
+        self.layout.addWidget(self.label_rotation_value,    button*3, start_controls+button+slider_width,   button, button)
+
+        self.layout.addWidget(self.slider_blur,       button*4, start_controls+button, button, slider_width)
+        self.layout.addWidget(self.label_blur,        button*4, start_controls,   button, button)
+        self.layout.addWidget(self.label_blur_value,    button*4, start_controls+button+slider_width,   button, button)
+
+        self.layout.addWidget(self.slider_brightness, button*5, start_controls+button, button, slider_width)
+        self.layout.addWidget(self.label_brightness,  button*5, start_controls,   button, button)
+        self.layout.addWidget(self.label_brightness_value,    button*5, start_controls+button+slider_width,   button, button)
         # init it!
         self.show()
 
     '''
     ==================== functions to bind to widgets ====================
     '''
-    def choose_image_reference(self):
+    def load_dataset(self, csv_file):
+        self.df = pd.read_csv(csv_file)
+        self.im_num = 0   # row of csv dataset to use
+        self.im_dir = os.path.join(os.path.dirname(csv_file), 'images')
+        self.load_curr_image()
+
+    def load_curr_image(self):
+        image = self.df.iloc[self.im_num]['sensor_image']
+        image_path = os.path.join(self.im_dir, image)
+        self.im_reference = load_image(image_path)
+
+    def load_prev_image(self):
+        self.im_num -= 1
+        if self.im_num < 0:
+            self.im_num = len(self.df) - 1
+        self.load_curr_image()
+        self.display_images()
+
+    def load_next_image(self):
+        self.im_num += 1
+        if self.im_num == len(self.df):
+            self.im_num = 0
+        self.load_curr_image()
+        self.display_images()
+
+    def choose_dataset(self):
         '''
         choose video file from Files
         '''
         try:
-            self.image1_file, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Image Files (*.png)")#, options=options)
-            if self.image1_file != '':
+            csv_file, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;CSV files (*.csv)")#, options=options)
+            if csv_file != '':
+                self.load_dataset(csv_file)
+                self.display_images()
                 # self.reset_all_sliders()
-                # self.get_list_of_ims(self.video_file, button=self.button_video)
-                print('now impliment load image')
         except:
             self.statusBar().showMessage('Cancelled Load')
 
@@ -165,17 +239,23 @@ class make_app(QMainWindow):
 
     def rotate_image(self):
         self.angle_to_rotate = self.slider_rotation.value()
-        self.display_images()
+        self.label_rotation_value.setText(str(self.angle_to_rotate))
 
     def blur_image(self):
         self.guassian_blur_kernel_size = (int(self.slider_blur.value()/2)*2) + 1    # need to make kernel size odd
-        self.display_images()
+        self.label_blur_value.setText(str(self.guassian_blur_kernel_size))
+
+    def brightness_image(self):
+        self.brightness_adjustment = self.slider_brightness.value()
+        self.label_brightness_value.setText(str(self.brightness_adjustment))
+        self.brightness_adjustment = self.brightness_adjustment/255
 
     '''
     image updaters
     '''
     def transform_compare_image(self):
         im_trans = rotate(self.im_compare, self.angle_to_rotate)
+        im_trans = np.clip(im_trans + self.brightness_adjustment, 0, 255)
         if self.guassian_blur_kernel_size > 0:
             im_trans = cv2.GaussianBlur(im_trans,(self.guassian_blur_kernel_size, self.guassian_blur_kernel_size), cv2.BORDER_DEFAULT)
         return im_trans
@@ -188,8 +268,9 @@ class make_app(QMainWindow):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str, help='image file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/tap/128x128/csv_train/images/image_1.png'))
+    parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/edge_2d/shear/128x128/csv_train/targets.csv'))
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
     window = make_app(app, args)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
