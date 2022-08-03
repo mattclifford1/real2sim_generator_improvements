@@ -20,6 +20,7 @@ import sys; sys.path.append('..'); sys.path.append('.')
 from gui_utils import change_im, load_image
 import gui_utils
 import net_utils
+import metrics_utils
 
 class make_app(QMainWindow):
     def __init__(self, app, args):
@@ -29,6 +30,7 @@ class make_app(QMainWindow):
         # self.set_window()
         self.copy_or_real = 'Copy'
         self.generator = net_utils.generator(self.args.generator_path)
+        self.metrics = metrics_utils.im_metrics()
         self.init_images()
         self.init_widgets()
         self.init_layout()
@@ -310,13 +312,14 @@ class make_app(QMainWindow):
     '''
     image updaters
     '''
-    def transform_compare_image(self):
-
-        return gui_utils.transform_image(self.sensor_data['im_compare'], self.im_trans_params)
+    def transform_image(self, image):
+        return gui_utils.transform_image(image, self.im_trans_params)
 
     def display_images(self):
         change_im(self.im_Qlabels['im_reference'], self.sensor_data['im_reference'], resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_compare'], self.transform_compare_image(), resize=self.image_display_size)
+        trans_comp_im = self.transform_image(self.sensor_data['im_compare'])
+        change_im(self.im_Qlabels['im_compare'], trans_comp_im, resize=self.image_display_size)
+        self.metrics.get_metrics(self.sensor_data['im_reference'], trans_comp_im)
 
 
 
