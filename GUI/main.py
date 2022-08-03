@@ -8,7 +8,7 @@ import pandas as pd
 
 import cv2
 import numpy as np
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QLineEdit, QMenu, QFileDialog, QPushButton, QGridLayout, QLabel, QSlider, QComboBox
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QLineEdit, QMenu, QFileDialog, QPushButton, QGridLayout, QLabel, QSlider, QComboBox, QCheckBox
 # from PyQt6.QtGui import QImage, QColor
 from PyQt6.QtCore import Qt
 
@@ -90,19 +90,22 @@ class make_app(QMainWindow):
         '''
         create all the widgets we need and init params
         '''
-        # load images
+        '''buttons'''
         self.button_dataset_load = QPushButton('Choose Dataset', self)
         self.button_dataset_load.clicked.connect(self.choose_dataset)
         self.button_prev = QPushButton('<', self)
         self.button_prev.clicked.connect(self.load_prev_image)
         self.button_next = QPushButton('>', self)
         self.button_next.clicked.connect(self.load_next_image)
-        self.button_copy_im = QPushButton('Real', self)
-        self.button_copy_im.clicked.connect(self.copy_ref_im)
-        self.button_generator = QPushButton('Generator', self)
-        self.button_generator.clicked.connect(self.run_generator)
         # self.button_image2 = QPushButton('Choose Image 2', self)
         # self.button_image2.clicked.connect(self.choose_image_compare)
+        '''checkboxes'''
+        self.checkbox_copy_im = QCheckBox('Real Image', self)
+        self.checkbox_copy_im.toggled.connect(self.copy_ref_im)
+        self.run_generator = False
+        self.checkbox_generator = QCheckBox('Run Generator', self)
+        self.checkbox_generator.toggled.connect(self.toggle_generator)
+        self.checkbox_generator.setEnabled(False)
         '''sliders'''
         # rotation
         self.im_trans_params = {}
@@ -164,6 +167,7 @@ class make_app(QMainWindow):
         im_height = 20
         button = 1
         slider_width = 10
+        check_box_width = 5
         # horizonal start values
         start_im = 0
         start_controls = im_width*2
@@ -178,9 +182,12 @@ class make_app(QMainWindow):
 
         # image buttons (prev, copy, next, etc.)
         self.layout.addWidget(self.button_prev,    im_height, 0, 1, 1)
-        self.layout.addWidget(self.button_copy_im, im_height, 1, 1, 1)
+        # self.layout.addWidget(self.button_copy_im, im_height, 1, 1, 1)
         self.layout.addWidget(self.button_next,    im_height, 2, 1, 1)
-        self.layout.addWidget(self.button_generator,im_height, im_width, 1, 1)
+
+        # checkboxes
+        self.layout.addWidget(self.checkbox_copy_im,   button*2, start_controls+button, button, check_box_width)
+        self.layout.addWidget(self.checkbox_generator, button*2, start_controls+button+check_box_width, button, check_box_width)
 
         # sliders
         self.layout.addWidget(self.slider_rotation,   button*3, start_controls+button, button, slider_width)
@@ -224,8 +231,11 @@ class make_app(QMainWindow):
             image_path = os.path.join(self.im_real_dir, image)
             self.sensor_data['im_compare'] = load_image(image_path)
             self.sensor_data['im_compare'] = gui_utils.process_im(self.sensor_data['im_compare'], data_type='real')
+            if self.run_generator == True:
+                self.sensor_data['im_compare'] = self.generator.get_prediction(self.sensor_data['im_compare'])
         elif self.copy_or_real == 'Copy':
             self.sensor_data['im_compare'] = self.sensor_data['im_reference'].copy()
+
 
     def load_prev_image(self):
         self.im_num -= 1
@@ -246,10 +256,15 @@ class make_app(QMainWindow):
     def copy_ref_im(self):
         if self.copy_or_real == 'Real':
             self.copy_or_real = 'Copy'
-            self.button_copy_im.setText('Real')
+            self.checkbox_generator.setEnabled(False)
         elif self.copy_or_real == 'Copy':
             self.copy_or_real = 'Real'
-            self.button_copy_im.setText('Copy')
+            self.checkbox_generator.setEnabled(True)
+        self.load_real_image()
+        self.display_images()
+
+    def toggle_generator(self):
+        self.run_generator = not self.run_generator
         self.load_real_image()
         self.display_images()
 
@@ -296,15 +311,13 @@ class make_app(QMainWindow):
     image updaters
     '''
     def transform_compare_image(self):
+
         return gui_utils.transform_image(self.sensor_data['im_compare'], self.im_trans_params)
 
     def display_images(self):
         change_im(self.im_Qlabels['im_reference'], self.sensor_data['im_reference'], resize=self.image_display_size)
         change_im(self.im_Qlabels['im_compare'], self.transform_compare_image(), resize=self.image_display_size)
 
-    def run_generator(self):
-        self.sensor_data['im_compare'] = self.generator.get_prediction(self.sensor_data['im_compare'])
-        self.display_images()
 
 
 if __name__ == '__main__':
