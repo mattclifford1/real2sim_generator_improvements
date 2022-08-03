@@ -1,7 +1,7 @@
 # fix for loading iris drivers on ubuntu when running python from anaconda
 # copies and links the correct libs
 
-ENV=gui_test
+ENV=sim2real
 cd ~/anaconda3/envs/$ENV/lib
 mkdir backup  # Create a new folder to keep the original libstdc++
 mv libstd* backup  # Put all libstdc++ files into the folder, including soft links
