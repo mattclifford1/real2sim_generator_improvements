@@ -1,6 +1,7 @@
-from skimage.transform import resize
+from skimage.transform import resize, rotate
 from skimage.util import img_as_ubyte
 import cv2
+import os
 import numpy as np
 from PyQt6.QtGui import QPixmap, QImage
 # from PyQt5.QtWidgets import qApp
@@ -36,3 +37,54 @@ def change_im(widget, im, resize=False, return_qimage=False):
 
 def load_image(image_path):
     return cv2.imread(image_path)
+
+def process_im(image, data_type='sim'):
+    # Convert to gray scale
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Add channel axis
+    image = image[..., np.newaxis]
+    if data_type == 'real':
+        # Crop to specified bounding box
+        bbox = [80,25,530,475]
+        x0, y0, x1, y1 = bbox
+        image = image[y0:y1, x0:x1]
+        # Resize to specified dims
+        image = cv2.resize(image, (128, 128), interpolation=cv2.INTER_AREA)
+        # Add channel axis
+        image = image[..., np.newaxis]
+        # threshold_image
+        image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, -30)
+        image = image[..., np.newaxis]
+    return image.astype(np.float32) / 255.0
+
+def get_real_csv_given_sim(sim_csv):
+    ''' try find equivelant real csv given a sim
+        only works for standard dir structing
+        will return sim_csv if can't find real csv'''
+    dirs = sim_csv.split(os.sep)
+    dirs[0] = os.sep
+    dirs.pop(-3)       # remove 128x128
+    dirs[-5] = 'real'  # swap sim for real
+    real_csv = os.path.join(*dirs)
+    if os.path.isfile(real_csv):
+        return real_csv
+    else:
+        return sim_csv
+
+def transform_image(image, params_dict):
+    if 'angle_to_rotate' in params_dict.keys():
+        image = rotate(image, params_dict['angle_to_rotate'])
+
+    if 'brightness_adjustment' in params_dict.keys():
+        image = np.clip(image + params_dict['brightness_adjustment'], 0, 1)
+
+    if 'guass_blur_kern_size' in params_dict.keys():
+        if params_dict['guass_blur_kern_size'] > 0:
+            image = cv2.GaussianBlur(image,(params_dict['guass_blur_kern_size'], params_dict['guass_blur_kern_size']), cv2.BORDER_DEFAULT)
+            if len(image.shape) == 2:
+                image = np.expand_dims(image, axis=2)
+    return image
+
+
+if __name__ == '__main__':
+    get_real_csv_given_sim('/home/matt/summer-project/data/Bourne/tactip/sim/edge_2d/shear/128x128/csv_train/targets.csv')

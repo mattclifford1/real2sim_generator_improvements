@@ -18,8 +18,8 @@ from PyQt6.QtCore import QRect, QPoint, Qt
 
 import sys; sys.path.append('..'); sys.path.append('.')
 from gui_utils import change_im, load_image
-
-from skimage.transform import rotate
+import gui_utils
+import net_utils
 
 class make_app(QMainWindow):
     def __init__(self, app, args):
@@ -27,6 +27,8 @@ class make_app(QMainWindow):
         self.args = args
         self.app = app
         # self.set_window()
+        self.copy_or_real = 'Copy'
+        self.generator = net_utils.generator(self.args.generator_path)
         self.init_images()
         self.init_widgets()
         self.init_layout()
@@ -67,14 +69,15 @@ class make_app(QMainWindow):
         self.im_Qlabels['im_compare'].setAlignment(Qt.AlignmentFlag.AlignRight)
 
         # load images
+        self.sensor_data = {}
         if os.path.exists(self.args.image_path):
-            self.im_compare = load_image(self.args.image_path)
+            self.sensor_data['im_compare'] = load_image(self.args.image_path)
         else:
-            self.im_compare = np.zeros([128, 128, 1], dtype=np.uint8)
+            self.sensor_data['im_compare'] = np.zeros([128, 128, 1], dtype=np.uint8)
         if os.path.exists(self.args.csv_path):
             self.load_dataset(self.args.csv_path)
         else:
-            self.im_reference = np.zeros([128, 128, 1], dtype=np.uint8)
+            self.sensor_data['im_reference'] = np.zeros([128, 128, 1], dtype=np.uint8)
 
         # self.im_Qlabels['colour_output'].mousePressEvent = self.image_click
         # hold video frames
@@ -94,51 +97,58 @@ class make_app(QMainWindow):
         self.button_prev.clicked.connect(self.load_prev_image)
         self.button_next = QPushButton('>', self)
         self.button_next.clicked.connect(self.load_next_image)
+        self.button_copy_im = QPushButton('Real', self)
+        self.button_copy_im.clicked.connect(self.copy_ref_im)
+        self.button_generator = QPushButton('Generator', self)
+        self.button_generator.clicked.connect(self.run_generator)
         # self.button_image2 = QPushButton('Choose Image 2', self)
         # self.button_image2.clicked.connect(self.choose_image_compare)
         '''sliders'''
         # rotation
+        self.im_trans_params = {}
         self.slider_rotation = QSlider(Qt.Orientation.Horizontal)
         self.slider_rotation.setMinimum(-180)
         self.slider_rotation.setMaximum(180)
         self.slider_rotation.valueChanged.connect(self.rotate_image)
+        self.slider_rotation.valueChanged.connect(self.display_images)
         self.slider_rotation.sliderReleased.connect(self.display_images)
-        self.angle_to_rotate = 0
-        self.slider_rotation.setValue(self.angle_to_rotate)
+        self.im_trans_params['angle_to_rotate'] = 0
+        self.slider_rotation.setValue(self.im_trans_params['angle_to_rotate'])
         self.label_rotation = QLabel(self)
         self.label_rotation.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.label_rotation.setText('Rotation:')
         self.label_rotation_value = QLabel(self)
         self.label_rotation_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.label_rotation_value.setText(str(self.angle_to_rotate))
+        self.label_rotation_value.setText(str(self.im_trans_params['angle_to_rotate']))
         # guassian blur
         self.slider_blur = QSlider(Qt.Orientation.Horizontal)
         self.slider_blur.setMinimum(0)
-        self.slider_blur.setMaximum(50)
+        self.slider_blur.setMaximum(40)
         self.slider_blur.valueChanged.connect(self.blur_image)
         self.slider_blur.sliderReleased.connect(self.display_images)
-        self.guassian_blur_kernel_size = 0
-        self.slider_blur.setValue(self.guassian_blur_kernel_size)
+        self.im_trans_params['guass_blur_kern_size'] = 0
+        self.slider_blur.setValue(self.im_trans_params['guass_blur_kern_size'])
         self.label_blur = QLabel(self)
         self.label_blur.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.label_blur.setText('Blur:')
         self.label_blur_value = QLabel(self)
         self.label_blur_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.label_blur_value.setText(str(self.guassian_blur_kernel_size))
+        self.label_blur_value.setText(str(self.im_trans_params['guass_blur_kern_size']))
         # brightness
         self.slider_brightness = QSlider(Qt.Orientation.Horizontal)
-        self.slider_brightness.setMinimum(-127)
-        self.slider_brightness.setMaximum(127)
+        self.slider_brightness.setMinimum(-255)
+        self.slider_brightness.setMaximum(255)
         self.slider_brightness.valueChanged.connect(self.brightness_image)
+        self.slider_brightness.valueChanged.connect(self.display_images)
         self.slider_brightness.sliderReleased.connect(self.display_images)
-        self.brightness_adjustment = 0
-        self.slider_brightness.setValue(self.brightness_adjustment)
+        self.im_trans_params['brightness_adjustment'] = 0
+        self.slider_brightness.setValue(self.im_trans_params['brightness_adjustment'])
         self.label_brightness = QLabel(self)
         self.label_brightness.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.label_brightness.setText('Brightness:')
         self.label_brightness_value = QLabel(self)
         self.label_brightness_value.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.label_brightness_value.setText(str(self.brightness_adjustment))
+        self.label_brightness_value.setText(str(self.im_trans_params['brightness_adjustment']))
 
     def init_layout(self):
         '''
@@ -164,9 +174,13 @@ class make_app(QMainWindow):
         # self.layout.addWidget(self.im_Qlabels['im_diff'], im_height+1, im_width//2, im_height//2, im_width//2)
 
         # load files
-        self.layout.addWidget(self.button_prev, im_height, 0, 1, 1)
         # self.layout.addWidget(self.button_dataset_load, im_height, 1, 1, 1)
-        self.layout.addWidget(self.button_next, im_height, im_width-1, 1, 1)
+
+        # image buttons (prev, copy, next, etc.)
+        self.layout.addWidget(self.button_prev,    im_height, 0, 1, 1)
+        self.layout.addWidget(self.button_copy_im, im_height, 1, 1, 1)
+        self.layout.addWidget(self.button_next,    im_height, 2, 1, 1)
+        self.layout.addWidget(self.button_generator,im_height, im_width, 1, 1)
 
         # sliders
         self.layout.addWidget(self.slider_rotation,   button*3, start_controls+button, button, slider_width)
@@ -189,26 +203,54 @@ class make_app(QMainWindow):
     def load_dataset(self, csv_file):
         self.df = pd.read_csv(csv_file)
         self.im_num = 0   # row of csv dataset to use
-        self.im_dir = os.path.join(os.path.dirname(csv_file), 'images')
-        self.load_curr_image()
+        self.im_sim_dir = os.path.join(os.path.dirname(csv_file), 'images')
+        self.im_real_dir = os.path.join(os.path.dirname(gui_utils.get_real_csv_given_sim(csv_file)), 'images')
+        self.load_sim_image()
+        self.load_real_image()
 
-    def load_curr_image(self):
+    def load_sim_image(self):
         image = self.df.iloc[self.im_num]['sensor_image']
-        image_path = os.path.join(self.im_dir, image)
-        self.im_reference = load_image(image_path)
+        image_path = os.path.join(self.im_sim_dir, image)
+        poses = ['pose_'+str(i) for i in range(1,7)]
+        self.sensor_data['poses'] = {}
+        for pose in poses:
+            self.sensor_data['poses'][pose] = self.df.iloc[self.im_num][pose]
+        self.sensor_data['im_reference'] = load_image(image_path)
+        self.sensor_data['im_reference'] = gui_utils.process_im(self.sensor_data['im_reference'], data_type='sim')
+
+    def load_real_image(self):
+        if self.copy_or_real == 'Real':
+            image = self.df.iloc[self.im_num]['sensor_image']
+            image_path = os.path.join(self.im_real_dir, image)
+            self.sensor_data['im_compare'] = load_image(image_path)
+            self.sensor_data['im_compare'] = gui_utils.process_im(self.sensor_data['im_compare'], data_type='real')
+        elif self.copy_or_real == 'Copy':
+            self.sensor_data['im_compare'] = self.sensor_data['im_reference'].copy()
 
     def load_prev_image(self):
         self.im_num -= 1
         if self.im_num < 0:
             self.im_num = len(self.df) - 1
-        self.load_curr_image()
+        self.load_sim_image()
+        self.load_real_image()
         self.display_images()
 
     def load_next_image(self):
         self.im_num += 1
         if self.im_num == len(self.df):
             self.im_num = 0
-        self.load_curr_image()
+        self.load_sim_image()
+        self.load_real_image()
+        self.display_images()
+
+    def copy_ref_im(self):
+        if self.copy_or_real == 'Real':
+            self.copy_or_real = 'Copy'
+            self.button_copy_im.setText('Real')
+        elif self.copy_or_real == 'Copy':
+            self.copy_or_real = 'Real'
+            self.button_copy_im.setText('Copy')
+        self.load_real_image()
         self.display_images()
 
     def choose_dataset(self):
@@ -238,37 +280,38 @@ class make_app(QMainWindow):
             self.statusBar().showMessage('Cancelled Load')
 
     def rotate_image(self):
-        self.angle_to_rotate = self.slider_rotation.value()
-        self.label_rotation_value.setText(str(self.angle_to_rotate))
+        self.im_trans_params['angle_to_rotate'] = self.slider_rotation.value()
+        self.label_rotation_value.setText(str(self.im_trans_params['angle_to_rotate']))
 
     def blur_image(self):
-        self.guassian_blur_kernel_size = (int(self.slider_blur.value()/2)*2) + 1    # need to make kernel size odd
-        self.label_blur_value.setText(str(self.guassian_blur_kernel_size))
+        self.im_trans_params['guass_blur_kern_size'] = (int(self.slider_blur.value()/2)*2) + 1    # need to make kernel size odd
+        self.label_blur_value.setText(str(self.im_trans_params['guass_blur_kern_size']))
 
     def brightness_image(self):
-        self.brightness_adjustment = self.slider_brightness.value()
-        self.label_brightness_value.setText(str(self.brightness_adjustment))
-        self.brightness_adjustment = self.brightness_adjustment/255
+        self.im_trans_params['brightness_adjustment'] = self.slider_brightness.value()
+        self.label_brightness_value.setText(str(self.im_trans_params['brightness_adjustment']))
+        self.im_trans_params['brightness_adjustment'] = self.im_trans_params['brightness_adjustment']/255
 
     '''
     image updaters
     '''
     def transform_compare_image(self):
-        im_trans = rotate(self.im_compare, self.angle_to_rotate)
-        im_trans = np.clip(im_trans + self.brightness_adjustment, 0, 255)
-        if self.guassian_blur_kernel_size > 0:
-            im_trans = cv2.GaussianBlur(im_trans,(self.guassian_blur_kernel_size, self.guassian_blur_kernel_size), cv2.BORDER_DEFAULT)
-        return im_trans
+        return gui_utils.transform_image(self.sensor_data['im_compare'], self.im_trans_params)
 
     def display_images(self):
-        change_im(self.im_Qlabels['im_reference'], self.im_reference, resize=self.image_display_size)
+        change_im(self.im_Qlabels['im_reference'], self.sensor_data['im_reference'], resize=self.image_display_size)
         change_im(self.im_Qlabels['im_compare'], self.transform_compare_image(), resize=self.image_display_size)
+
+    def run_generator(self):
+        self.sensor_data['im_compare'] = self.generator.get_prediction(self.sensor_data['im_compare'])
+        self.display_images()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str, help='image file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/tap/128x128/csv_train/images/image_1.png'))
-    parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/edge_2d/shear/128x128/csv_train/targets.csv'))
+    parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv'))
+    parser.add_argument('--generator_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth'))
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
