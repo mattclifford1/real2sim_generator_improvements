@@ -57,8 +57,8 @@ class im_metrics():
         # self.metrics['NLPD_3'] = LaplacianPyramid(k=3).to(self.device)
 
     def get_metrics(self, im_ref, im_comp):
-        im_ref = preprocess_numpy_image(im_ref)
-        im_comp = preprocess_numpy_image(im_comp)
+        im_ref = preprocess_numpy_image(im_ref).to(device=self.device, dtype=torch.float)
+        im_comp = preprocess_numpy_image(im_comp).to(device=self.device, dtype=torch.float)
         _scores = {}
         for key in self.metrics.keys():
             _scores[key] = []
