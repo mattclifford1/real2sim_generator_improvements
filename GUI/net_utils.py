@@ -38,8 +38,7 @@ class generator():
 
     def get_prediction(self, image):
         '''preprocess image'''
-        image = preprocess_numpy_image(image)
-        image = image.to(device=self.device, dtype=torch.float)
+        image = preprocess_numpy_image(image).to(device=self.device, dtype=torch.float)
         ''' get prediction'''
         pred = self.generator(image)
         return post_process_torch_image(pred)
@@ -47,14 +46,17 @@ class generator():
 
 '''pose estimation model on single image'''
 class pose_estimation():
-    def __init__(self, weights_path):
+    def __init__(self, weights_path, sim=True):
+        self.use_sim = sim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.get_task_from_checkpoint(weights_path)
         self.net = pose_128.network(final_size=self.net_out_dims)
         self.net.to(self.device)
         self.net.eval()
+        weights_path = self.sim_or_real_net(weights_path)
         if os.path.isfile(weights_path):
             self.load_normalisation(weights_path)
+            print(weights_path)
             load_weights(self.net, weights_path)
         else:
             print('*******\n*******\nCannot load pose estimation weights path: '+str(weights_path))
@@ -72,6 +74,21 @@ class pose_estimation():
         else:
             raise Exception('Incorrect task: '+str(self.task[0]))
 
+    def sim_or_real_net(self, weights_path):
+        '''change weights to real network if required'''
+        dirs = weights_path.split(os.sep)
+        dirs[0] = os.sep
+        if self.use_sim == True and dirs[-4][:3] == 'sim':
+            return weights_path
+        if self.use_sim == False and dirs[-4][:3] == 'sim':
+            dirs[-4] = 'real' + dirs[-4][3:]
+            return os.path.join(*dirs)
+        if self.use_sim == True and dirs[-4][:4] == 'real':
+            dirs[-4] = 'sim' + dirs[-4][4:]
+            return os.path.join(*dirs)
+        if self.use_sim == False and dirs[-4][:4] == 'real':
+            return weights_path
+
     def load_normalisation(self, weights_path):
         '''get the interpolation y labels range that the model was trined on'''
         model_dir = os.path.dirname(weights_path)
@@ -81,8 +98,7 @@ class pose_estimation():
 
     def get_prediction(self, image):
         '''preprocess image'''
-        image = preprocess_numpy_image(image)
-        image = image.to(device=self.device, dtype=torch.float)
+        image = preprocess_numpy_image(image).to(device=self.device, dtype=torch.float)
         ''' get prediction'''
         return self.net(image)
 
@@ -98,7 +114,7 @@ class pose_estimation():
         labels = self.normalise_y_labels(y_labels)
         ae = torch.abs(pred_y - labels).cpu().detach().numpy()
         mae = ae.mean()
-        return mae, list(ae.squeeze())
+        return {'MAE': [mae], 'ABS Error':[list(ae.squeeze())]}
 
 
 if __name__ == '__main__':
@@ -122,5 +138,5 @@ if __name__ == '__main__':
     sensor_data['im_reference'] = gui_utils.load_image(image_path)
     sensor_data['im_reference'] = gui_utils.process_im(sensor_data['im_reference'], data_type='sim')
 
-    mae, ae = e.get_error(sensor_data['im_reference'], sensor_data['poses'])
-    print(mae, ae)
+    errors = e.get_error(sensor_data['im_reference'], sensor_data['poses'])
+    print(errors)
