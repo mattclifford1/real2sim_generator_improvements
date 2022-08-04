@@ -65,4 +65,4 @@ class im_metrics():
         for key in self.metrics.keys():
             _score = self.metrics[key](im_ref, im_comp)
             _scores[key].append(_score.cpu().detach().numpy())
-        print(_scores)
+        return _scores
