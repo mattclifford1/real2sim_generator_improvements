@@ -320,7 +320,12 @@ class make_app(QMainWindow):
         trans_comp_im = self.transform_image(self.sensor_data['im_compare'])
         change_im(self.im_Qlabels['im_compare'], trans_comp_im, resize=self.image_display_size)
         metrics = self.metrics.get_metrics(self.sensor_data['im_reference'], trans_comp_im)
-        print(metrics, '\n')
+        self.display_metrics(metrics)
+
+    def display_metrics(self, metrics):
+        for key in metrics.keys():
+            print(key, ': ', metrics[key][0])
+        print('\n')
 
     def _display_images_quick(self):
         '''dont update the metrics for speedy interaction'''
@@ -334,6 +339,7 @@ if __name__ == '__main__':
     parser.add_argument('--image_path', type=str, help='image file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/tap/128x128/csv_train/images/image_1.png'))
     parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv'))
     parser.add_argument('--generator_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth'))
+    parser.add_argument('--pose_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'))
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
