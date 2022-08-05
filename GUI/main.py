@@ -407,12 +407,16 @@ class make_app(QMainWindow):
         return gui_utils.transform_image(image, self.im_trans_params)
 
     def display_images(self):
-        change_im(self.im_Qlabels['im_real'], self.sensor_data['im_real'], resize=self.image_display_size)
-        im_real_trans = self.transform_image(self.sensor_data['im_real'])
-        change_im(self.im_Qlabels['im_real_trans'], im_real_trans, resize=self.image_display_size)
+        # get transformed images
+        im_real_trans = gui_utils.process_im(self.transform_image(self.sensor_data['im_raw']), data_type='real')
+        im_gen_trans = self.generator.get_prediction(im_real_trans)
+        im_trans_gen = self.transform_image(gui_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
+
+        change_im(self.im_Qlabels['im_real'], im_real_trans, resize=self.image_display_size)
+        change_im(self.im_Qlabels['im_real_trans'], im_gen_trans, resize=self.image_display_size)
         change_im(self.im_Qlabels['im_gen'], self.sensor_data['im_gen'], resize=self.image_display_size)
-        im_gen_trans = self.transform_image(self.sensor_data['im_gen'])
-        change_im(self.im_Qlabels['im_gen_trans'], im_gen_trans, resize=self.image_display_size)
+        change_im(self.im_Qlabels['im_gen_trans'], im_trans_gen, resize=self.image_display_size)
+
         change_im(self.im_Qlabels['im_sim'], self.sensor_data['im_sim'], resize=self.image_display_size)
         im_sim_trans = self.transform_image(self.sensor_data['im_sim'])
         change_im(self.im_Qlabels['im_sim_trans'], im_sim_trans, resize=self.image_display_size)

@@ -52,10 +52,12 @@ def load_and_crop_raw_real(image_path):
     image = cv2.resize(image, (128, 128), interpolation=cv2.INTER_AREA)
     # Add channel axis
     image = image[..., np.newaxis]
-    return image
+    return image.astype(np.float32) / 255.0
 
 def process_im(image, data_type='sim'):
     if data_type == 'real':
+        image = image*255
+        image = image.astype(np.uint8)
         # threshold_image
         image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, -30)
         image = image[..., np.newaxis]
