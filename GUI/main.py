@@ -33,8 +33,8 @@ class make_app(QMainWindow):
         self.pose_esimator_sim = net_utils.pose_estimation(self.args.pose_path, sim=True)
         self.pose_esimator_real = net_utils.pose_estimation(self.args.pose_path, sim=False)
         self.metrics = metrics_utils.im_metrics()
-        self.init_images()
         self.init_widgets()
+        self.init_images()
         self.init_layout()
         self.image_display_size = (200, 200)
         self.display_images()
@@ -64,17 +64,6 @@ class make_app(QMainWindow):
             self.height = int(256)
         self.width = int(self.height*self.width_ratio)
 
-        # set up ims and click functions
-        self.im_Qlabels = {'im_real':QLabel(self),
-                           'im_real_trans':QLabel(self),
-                           'im_gen':QLabel(self),
-                           'im_gen_trans':QLabel(self),
-                           'im_sim':QLabel(self),
-                           'im_sim_trans':QLabel(self),
-                           }
-        for key in self.im_Qlabels.keys():
-            self.im_Qlabels[key].setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         # load images
         self.sensor_data = {}
         # if os.path.exists(self.args.image_path):
@@ -97,6 +86,17 @@ class make_app(QMainWindow):
         '''
         create all the widgets we need and init params
         '''
+        # set up ims
+        self.im_Qlabels = {'im_real':QLabel(self),
+                           'im_real_trans':QLabel(self),
+                           'im_gen':QLabel(self),
+                           'im_gen_trans':QLabel(self),
+                           'im_sim':QLabel(self),
+                           'im_sim_trans':QLabel(self),
+                           }
+        for key in self.im_Qlabels.keys():
+            self.im_Qlabels[key].setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # UI widgets
         self.widgets = {'button': {}, 'slider': {}, 'checkbox': {}, 'label': {}}
         '''im labels'''
         self.widgets['label']['im_real'] = QLabel(self)
@@ -122,10 +122,15 @@ class make_app(QMainWindow):
         # self.widgets['button']['load_dataset'].clicked.connect(self.choose_dataset)
         self.widgets['button']['prev'] = QPushButton('<', self)
         self.widgets['button']['prev'].clicked.connect(self.load_prev_image)
+        self.widgets['label']['filename'] = QLabel(self)
+        self.widgets['label']['filename'].setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.widgets['label']['filename'].setText('')
         self.widgets['button']['next'] = QPushButton('>', self)
         self.widgets['button']['next'].clicked.connect(self.load_next_image)
         self.widgets['button']['reset_sliders'] = QPushButton('Reset', self)
         self.widgets['button']['reset_sliders'].clicked.connect(self.reset_sliders)
+        self.widgets['button']['force_update'] = QPushButton('Update', self)
+        self.widgets['button']['force_update'].clicked.connect(self.display_images)
         # self.button_image2 = QPushButton('Choose Image 2', self)
         # self.button_image2.clicked.connect(self.choose_image_compare)
         '''checkboxes'''
@@ -260,8 +265,9 @@ class make_app(QMainWindow):
         # self.layout.addWidget(self.widgets['button']['load_dataset'], im_height, 1, 1, 1)
 
         # image buttons (prev, copy, next, etc.)
-        self.layout.addWidget(self.widgets['button']['prev'], start_im+im_row*(im_height+button), 0, button, im_width)
-        self.layout.addWidget(self.widgets['button']['next'], start_im+im_row*(im_height+button), im_width+button, button, im_width)
+        self.layout.addWidget(self.widgets['button']['prev'], start_im+im_row*(im_height+button), 0, button, int(im_width*0.66))
+        self.layout.addWidget(self.widgets['label']['filename'], start_im+im_row*(im_height+button), int(im_width*0.66), button, int(im_width*0.66))
+        self.layout.addWidget(self.widgets['button']['next'], start_im+im_row*(im_height+button), int(im_width*0.66*2), button, int(im_width*0.66))
         # self.layout.addWidget(self.button_copy_im, 0, 1, 1, 1)
 
         # checkboxes
@@ -374,6 +380,7 @@ class make_app(QMainWindow):
     '''
     def load_sim_image(self):
         image = self.df.iloc[self.im_num]['sensor_image']
+        self.widgets['label']['filename'].setText(image)
         image_path = os.path.join(self.im_sim_dir, image)
         poses = ['pose_'+str(i) for i in range(1,7)]
         self.sensor_data['poses'] = {}
