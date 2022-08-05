@@ -62,7 +62,11 @@ class im_metrics():
         for key in self.metrics.keys():
             _scores[key] = []
         for key in self.metrics.keys():
-            _score = self.metrics[key](im_ref, im_comp)
+            if key == 'MSSIM':
+                _score = self.metrics[key](torch.nn.functional.interpolate(im_ref, 256),
+                                           torch.nn.functional.interpolate(im_comp, 256))
+            else:
+                _score = self.metrics[key](im_ref, im_comp)
             _scores[key].append(_score.cpu().detach().numpy())
             if key == 'MSSIM' or key == 'SSIM':
                 self.metrics[key].reset()   # clear mem buffer to stop overflow
@@ -90,7 +94,12 @@ if __name__ == '__main__':
     # metrics = m.get_metrics(sensor_data['im_reference'], im_comp)
     # print(metrics)
 
-    mssim = MSSIM_mem_bug(kernel_size=7)
+    mssim = MSSIM()#kernel_size=3, sigma=1.0,betas=(0.01, 0.1, 0.3, 0.2, 0.1),)
     im1 = preprocess_numpy_image(sensor_data['im_reference'])
     im2 = preprocess_numpy_image(im_comp)
+
+    im1 = torch.rand([1, 1, 128, 128], generator=torch.manual_seed(42))
+    im2 = im1 * 0.75
+    im1 = torch.nn.functional.interpolate(im1, 256)
+    im2 = torch.nn.functional.interpolate(im2, 256)
     print(mssim(im1, im2))
