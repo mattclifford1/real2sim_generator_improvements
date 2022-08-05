@@ -4,9 +4,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from torchmetrics.functional import structural_similarity_index_measure as SSIM
-# from torchmetrics import StructuralSimilarityIndexMeasure as SSIM   # get GPU memory overflow if using this version.... :/
-from torchmetrics.functional import multiscale_structural_similarity_index_measure as MSSIM
+from torchmetrics import StructuralSimilarityIndexMeasure as SSIM
+from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure as MSSIM
 from torchmetrics import PeakSignalNoiseRatio as PSNR
 # from torchmetrics import UniversalImageQualityIndex as UIQI
 from torchmetrics.functional import universal_image_quality_index as UIQI
@@ -38,16 +37,16 @@ class grey_to_3_channel_input():
 class im_metrics():
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.get_similarity_metrics()
+        self._get_similarity_metrics()
 
-    def get_similarity_metrics(self):
+    def _get_similarity_metrics(self):
         # dictionary of callable metric functions
         # eg: score = self.metrics['xx'](im1, im2)
         self.metrics = {}
         self.metrics['MSE'] = nn.MSELoss()
-        self.metrics['SSIM'] = SSIM
+        self.metrics['SSIM'] = SSIM()
+        self.metrics['MSSIM'] = MSSIM(kernel_size=7)
         self.metrics['NLPD'] = LaplacianPyramid(k=1).to(self.device)
-        # self.metrics['MSSIM'] = MSSIM    # not compatable with 128x128 images
         self.metrics['PSNR'] = PSNR().to(self.device)
         self.metrics['UIQI'] = UIQI
         # self.metrics['SDI'] = SDI() # gives nan
@@ -65,4 +64,33 @@ class im_metrics():
         for key in self.metrics.keys():
             _score = self.metrics[key](im_ref, im_comp)
             _scores[key].append(_score.cpu().detach().numpy())
+            if key == 'MSSIM' or key == 'SSIM':
+                self.metrics[key].reset()   # clear mem buffer to stop overflow
         return _scores
+
+if __name__ == '__main__':
+    import os
+    import pandas as pd
+    import sys; sys.path.append('..'); sys.path.append('.')
+    import gui_utils
+    sensor_data = {}
+    csv_file = os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv')
+    df = pd.read_csv(csv_file)
+    im_sim_dir = os.path.join(os.path.dirname(csv_file), 'images')
+    im_num = 10
+    image = df.iloc[im_num]['sensor_image']
+    image_path = os.path.join(im_sim_dir, image)
+
+    sensor_data['im_reference'] = gui_utils.load_image(image_path)
+    sensor_data['im_reference'] = gui_utils.process_im(sensor_data['im_reference'], data_type='sim')
+    im_comp = np.clip(sensor_data['im_reference']+0.3, 0, 1)
+
+
+    # m = im_metrics()
+    # metrics = m.get_metrics(sensor_data['im_reference'], im_comp)
+    # print(metrics)
+
+    mssim = MSSIM_mem_bug(kernel_size=7)
+    im1 = preprocess_numpy_image(sensor_data['im_reference'])
+    im2 = preprocess_numpy_image(im_comp)
+    print(mssim(im1, im2))
