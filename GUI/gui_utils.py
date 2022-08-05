@@ -38,22 +38,31 @@ def change_im(widget, im, resize=False, return_qimage=False):
 def load_image(image_path):
     return cv2.imread(image_path)
 
-def process_im(image, data_type='sim'):
+def load_and_crop_raw_real(image_path):
+    image = cv2.imread(image_path)
     # Convert to gray scale
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # Add channel axis
     image = image[..., np.newaxis]
+    # Crop to specified bounding box
+    bbox = [80,25,530,475]
+    x0, y0, x1, y1 = bbox
+    image = image[y0:y1, x0:x1]
+    # Resize to specified dims
+    image = cv2.resize(image, (128, 128), interpolation=cv2.INTER_AREA)
+    # Add channel axis
+    image = image[..., np.newaxis]
+    return image
+
+def process_im(image, data_type='sim'):
     if data_type == 'real':
-        # Crop to specified bounding box
-        bbox = [80,25,530,475]
-        x0, y0, x1, y1 = bbox
-        image = image[y0:y1, x0:x1]
-        # Resize to specified dims
-        image = cv2.resize(image, (128, 128), interpolation=cv2.INTER_AREA)
-        # Add channel axis
-        image = image[..., np.newaxis]
         # threshold_image
         image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, -30)
+        image = image[..., np.newaxis]
+    elif data_type == 'sim':
+        # Convert to gray scale
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Add channel axis
         image = image[..., np.newaxis]
     return image.astype(np.float32) / 255.0
 

@@ -43,6 +43,7 @@ class im_metrics():
         # dictionary of callable metric functions
         # eg: score = self.metrics['xx'](im1, im2)
         self.metrics = {}
+        self.metrics['MAE'] = nn.L1Loss()
         self.metrics['MSE'] = nn.MSELoss()
         self.metrics['SSIM'] = SSIM()
         self.metrics['MSSIM'] = MSSIM(kernel_size=7)

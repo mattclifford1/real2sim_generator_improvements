@@ -265,9 +265,9 @@ class make_app(QMainWindow):
         # self.layout.addWidget(self.widgets['button']['load_dataset'], im_height, 1, 1, 1)
 
         # image buttons (prev, copy, next, etc.)
-        self.layout.addWidget(self.widgets['button']['prev'], start_im+im_row*(im_height+button), 0, button, int(im_width*0.66))
-        self.layout.addWidget(self.widgets['label']['filename'], start_im+im_row*(im_height+button), int(im_width*0.66), button, int(im_width*0.66))
-        self.layout.addWidget(self.widgets['button']['next'], start_im+im_row*(im_height+button), int(im_width*0.66*2), button, int(im_width*0.66))
+        self.layout.addWidget(self.widgets['button']['prev'], start_im+im_row*(im_height+button), 1, button, int(im_width*0.66))
+        self.layout.addWidget(self.widgets['label']['filename'], start_im+im_row*(im_height+button), int(im_width*0.66)+1, button, int(im_width*0.66))
+        self.layout.addWidget(self.widgets['button']['next'], start_im+im_row*(im_height+button), int(im_width*0.66)*2+1, button, int(im_width*0.66))
         # self.layout.addWidget(self.button_copy_im, 0, 1, 1, 1)
 
         # checkboxes
@@ -286,6 +286,7 @@ class make_app(QMainWindow):
 
         # reset sliders
         self.layout.addWidget(self.widgets['button']['reset_sliders'], button*i, start_controls, button, button)
+        self.layout.addWidget(self.widgets['button']['force_update'], button*i, start_controls+button, button, button)
         i += 1
         # init it!
         self.show()
@@ -391,7 +392,9 @@ class make_app(QMainWindow):
 
     def load_real_image(self):
         image_path = os.path.join(self.im_real_dir, self.df.iloc[self.im_num]['sensor_image'])
-        self.sensor_data['im_real'] = gui_utils.process_im(load_image(image_path), data_type='real')
+        self.sensor_data['im_raw'] = gui_utils.load_and_crop_raw_real(image_path)
+
+        self.sensor_data['im_real'] = gui_utils.process_im(self.sensor_data['im_raw'], data_type='real')
         self.sensor_data['im_gen'] = self.generator.get_prediction(self.sensor_data['im_real'])
         # if self.copy_or_real == 'Real':
         #     self.sensor_data['im_compare'] = self.sensor_data['im_real'].copy()
