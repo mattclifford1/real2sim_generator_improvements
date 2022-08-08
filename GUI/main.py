@@ -73,7 +73,7 @@ class make_app(QMainWindow):
         if os.path.exists(self.args.csv_path):
             self.load_dataset(self.args.csv_path)
         else:
-            self.sensor_data['im_sim'] = np.zeros([128, 128, 1], dtype=np.uint8)
+            self.sensor_data['Xs'] = np.zeros([128, 128, 1], dtype=np.uint8)
 
         # self.im_Qlabels['colour_output'].mousePressEvent = self.image_click
         # hold video frames
@@ -86,37 +86,40 @@ class make_app(QMainWindow):
         '''
         create all the widgets we need and init params
         '''
-        # set up ims
-        self.im_Qlabels = {'im_real':QLabel(self),
-                           'im_real_trans':QLabel(self),
-                           'im_gen':QLabel(self),
-                           'im_gen_trans':QLabel(self),
-                           'im_sim':QLabel(self),
-                           'im_sim_trans':QLabel(self),
-                           }
-        for key in self.im_Qlabels.keys():
-            self.im_Qlabels[key].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # UI widgets
         self.widgets = {'button': {}, 'slider': {}, 'checkbox': {}, 'label': {}}
-        '''im labels'''
-        self.widgets['label']['im_real'] = QLabel(self)
-        self.widgets['label']['im_real'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_real'].setText('Real Image')
-        self.widgets['label']['im_real_trans'] = QLabel(self)
-        self.widgets['label']['im_real_trans'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_real_trans'].setText('Real Image Trans')
-        self.widgets['label']['im_gen'] = QLabel(self)
-        self.widgets['label']['im_gen'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_gen'].setText('Generatated Image')
-        self.widgets['label']['im_gen_trans'] = QLabel(self)
-        self.widgets['label']['im_gen_trans'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_gen_trans'].setText('Generatated Image Trans')
-        self.widgets['label']['im_sim'] = QLabel(self)
-        self.widgets['label']['im_sim'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_sim'].setText('Simulated Image')
-        self.widgets['label']['im_sim_trans'] = QLabel(self)
-        self.widgets['label']['im_sim_trans'].setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.widgets['label']['im_sim_trans'].setText('Simulated Image Trans')
+
+        '''images'''
+        self.im_pair_names = [
+                              ('Xr', 'T(Xr)'),
+                              ('G(Xr)', 'T(G(Xr))_'),
+                              ('Xs', 'T(Xs)'),
+                              ('G(T(Xr))', 'T(G(Xr))'),
+                              ]
+        self.im_Qlabels = {}
+        for im_pair in self.im_pair_names:
+            for im_name in im_pair:
+                # image widget
+                self.im_Qlabels[im_name] = QLabel(self)
+                self.im_Qlabels[im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
+                # image label
+                self.widgets['label'][im_name] = QLabel(self)
+                self.widgets['label'][im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.widgets['label'][im_name].setText(im_name)
+            # metrics info
+            self.widgets['label'][str(im_pair)+'_metrics'] = QLabel(self)
+            self.widgets['label'][str(im_pair)+'_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.widgets['label'][str(im_pair)+'_metrics'].setText('Metrics '+str(im_pair)+':')
+            self.widgets['label'][str(im_pair)+'_metrics_info'] = QLabel(self)
+            self.widgets['label'][str(im_pair)+'_metrics_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
+            self.widgets['label'][str(im_pair)+'_metrics_info'].setText('')
+            # error info
+            self.widgets['label'][str(im_pair)+'_errors'] = QLabel(self)
+            self.widgets['label'][str(im_pair)+'_errors'].setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.widgets['label'][str(im_pair)+'_errors'].setText('Pose Errors:')
+            self.widgets['label'][str(im_pair)+'_errors_info'] = QLabel(self)
+            self.widgets['label'][str(im_pair)+'_errors_info'].setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.widgets['label'][str(im_pair)+'_errors_info'].setText('')
+
         '''buttons'''
         # self.widgets['button']['load_dataset'] = QPushButton('Choose Dataset', self)
         # self.widgets['button']['load_dataset'].clicked.connect(self.choose_dataset)
@@ -186,44 +189,6 @@ class make_app(QMainWindow):
         self.widgets['label']['brightness_value'] = QLabel(self)
         self.widgets['label']['brightness_value'].setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.widgets['label']['brightness_value'].setText(str(self.im_trans_params['brightness_adjustment']))
-        '''metrics info'''
-        self.widgets['label']['real_metrics'] = QLabel(self)
-        self.widgets['label']['real_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['real_metrics'].setText('Metrics (real, real_trans):')
-        self.widgets['label']['real_metrics_info'] = QLabel(self)
-        self.widgets['label']['real_metrics_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['real_metrics_info'].setText('')
-        self.widgets['label']['gen_metrics'] = QLabel(self)
-        self.widgets['label']['gen_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['gen_metrics'].setText('Metrics (sim, gen_trans):')
-        self.widgets['label']['gen_metrics_info'] = QLabel(self)
-        self.widgets['label']['gen_metrics_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['gen_metrics_info'].setText('')
-        self.widgets['label']['sim_metrics'] = QLabel(self)
-        self.widgets['label']['sim_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['sim_metrics'].setText('Metrics (sim, sim_trans):')
-        self.widgets['label']['sim_metrics_info'] = QLabel(self)
-        self.widgets['label']['sim_metrics_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['sim_metrics_info'].setText('')
-        '''error info'''
-        self.widgets['label']['real_errors'] = QLabel(self)
-        self.widgets['label']['real_errors'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['real_errors'].setText('Pose Errors:')
-        self.widgets['label']['real_errors_info'] = QLabel(self)
-        self.widgets['label']['real_errors_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['real_errors_info'].setText('')
-        self.widgets['label']['gen_errors'] = QLabel(self)
-        self.widgets['label']['gen_errors'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['gen_errors'].setText('Pose Errors:')
-        self.widgets['label']['gen_errors_info'] = QLabel(self)
-        self.widgets['label']['gen_errors_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['gen_errors_info'].setText('')
-        self.widgets['label']['sim_errors'] = QLabel(self)
-        self.widgets['label']['sim_errors'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['sim_errors'].setText('Pose Errors:')
-        self.widgets['label']['sim_errors_info'] = QLabel(self)
-        self.widgets['label']['sim_errors_info'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['sim_errors_info'].setText('')
 
     def init_layout(self):
         '''
@@ -248,17 +213,17 @@ class make_app(QMainWindow):
 
         # display images
         im_row = 0
-        for im_type in ['im_real', 'im_gen', 'im_sim']:
-            self.layout.addWidget(self.widgets['label'][im_type], start_im-1+im_row*(im_height+button), 0, button, im_width)
-            self.layout.addWidget(self.widgets['label'][im_type+'_trans'], start_im-1+im_row*(im_height+button), im_width+button, button, im_width)
-            self.layout.addWidget(self.im_Qlabels[im_type], start_im+im_row*(im_height+button), 0,   im_height, im_width)
-            self.layout.addWidget(self.im_Qlabels[im_type+'_trans'], start_im+im_row*(im_height+button), im_width+button, im_height, im_width)
+        for im_pair in self.im_pair_names:
+            self.layout.addWidget(self.widgets['label'][im_pair[0]], start_im-1+im_row*(im_height+button), 0, button, im_width)
+            self.layout.addWidget(self.widgets['label'][im_pair[1]], start_im-1+im_row*(im_height+button), im_width+button, button, im_width)
+            self.layout.addWidget(self.im_Qlabels[im_pair[0]], start_im+im_row*(im_height+button), 0,   im_height, im_width)
+            self.layout.addWidget(self.im_Qlabels[im_pair[1]], start_im+im_row*(im_height+button), im_width+button, im_height, im_width)
             # metircs info
-            self.layout.addWidget(self.widgets['label'][im_type[3:]+'_metrics'], start_im+im_row*(im_height+button)+1, (im_width+button)*2, button, button)
-            self.layout.addWidget(self.widgets['label'][im_type[3:]+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+button, button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics'], start_im+im_row*(im_height+button)+1, (im_width+button)*2, button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+button, button, button)
             # errors info
-            self.layout.addWidget(self.widgets['label'][im_type[3:]+'_errors'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*2), button, button)
-            self.layout.addWidget(self.widgets['label'][im_type[3:]+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*3), button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*2), button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*3), button, button)
             im_row += 1
 
         # load files
@@ -270,8 +235,8 @@ class make_app(QMainWindow):
         self.layout.addWidget(self.widgets['button']['next'], start_im+im_row*(im_height+button), int(im_width*0.66)*2+1, button, int(im_width*0.66))
         # self.layout.addWidget(self.button_copy_im, 0, 1, 1, 1)
 
+        i = (im_height+button)*im_row+button+start_im
         # checkboxes
-        i = start_controls_row
         # self.layout.addWidget(self.widgets['checkbox']['real_im'],   button*i, start_controls+button, button, check_box_width)
         # self.layout.addWidget(self.widgets['checkbox']['run_generator'], button*i, start_controls+button+check_box_width, button, check_box_width)
         # i += 1
@@ -387,74 +352,68 @@ class make_app(QMainWindow):
         self.sensor_data['poses'] = {}
         for pose in poses:
             self.sensor_data['poses'][pose] = self.df.iloc[self.im_num][pose]
-        self.sensor_data['im_sim'] = load_image(image_path)
-        self.sensor_data['im_sim'] = gui_utils.process_im(self.sensor_data['im_sim'], data_type='sim')
+        self.sensor_data['Xs'] = load_image(image_path)
+        self.sensor_data['Xs'] = gui_utils.process_im(self.sensor_data['Xs'], data_type='sim')
 
     def load_real_image(self):
         image_path = os.path.join(self.im_real_dir, self.df.iloc[self.im_num]['sensor_image'])
         self.sensor_data['im_raw'] = gui_utils.load_and_crop_raw_real(image_path)
 
-        self.sensor_data['im_real'] = gui_utils.process_im(self.sensor_data['im_raw'], data_type='real')
-        self.sensor_data['im_gen'] = self.generator.get_prediction(self.sensor_data['im_real'])
+        self.sensor_data['Xr'] = gui_utils.process_im(self.sensor_data['im_raw'], data_type='real')
+        self.sensor_data['G(Xr)'] = self.generator.get_prediction(self.sensor_data['Xr'])
         # if self.copy_or_real == 'Real':
-        #     self.sensor_data['im_compare'] = self.sensor_data['im_real'].copy()
+        #     self.sensor_data['im_compare'] = self.sensor_data['Xr'].copy()
         #     if self.run_generator == True:
         #         self.sensor_data['im_compare'] = self.generator.get_prediction(self.sensor_data['im_compare'])
         # elif self.copy_or_real == 'Copy':
-        #     self.sensor_data['im_compare'] = self.sensor_data['im_sim'].copy()
+        #     self.sensor_data['im_compare'] = self.sensor_data['Xs'].copy()
 
     def transform_image(self, image):
         return gui_utils.transform_image(image, self.im_trans_params)
 
     def display_images(self):
-        # get transformed images
-        im_real_trans = gui_utils.process_im(self.transform_image(self.sensor_data['im_raw']), data_type='real')
-        im_gen_trans = self.generator.get_prediction(im_real_trans)
-        im_trans_gen = self.transform_image(gui_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
-
-        change_im(self.im_Qlabels['im_real'], im_real_trans, resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_real_trans'], im_gen_trans, resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_gen'], self.sensor_data['im_gen'], resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_gen_trans'], im_trans_gen, resize=self.image_display_size)
-
-        change_im(self.im_Qlabels['im_sim'], self.sensor_data['im_sim'], resize=self.image_display_size)
-        im_sim_trans = self.transform_image(self.sensor_data['im_sim'])
-        change_im(self.im_Qlabels['im_sim_trans'], im_sim_trans, resize=self.image_display_size)
-        self.get_metrics_errors({'real':im_real_trans, 'gen':im_gen_trans, 'sim':im_sim_trans})
-        # self.get_metrics_errors(im_real_trans)
+        self._display_images_quick()
+        self.get_metrics_errors()
+        # self.get_metrics_errors({'real':self.sensor_data['T(Xr)'], 'gen':self., 'sim':self.sensor_data['T(Xs)']})
+        # self.get_metrics_errors(self.sensor_data['T(Xr)'])
 
     def _display_images_quick(self):
-        '''dont update the metrics for speedy interaction'''
-        change_im(self.im_Qlabels['im_real'], self.sensor_data['im_real'], resize=self.image_display_size)
-        im_real_trans = self.transform_image(self.sensor_data['im_real'])
-        change_im(self.im_Qlabels['im_real_trans'], im_real_trans, resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_gen'], self.sensor_data['im_gen'], resize=self.image_display_size)
-        im_gen_trans = self.transform_image(self.sensor_data['im_gen'])
-        change_im(self.im_Qlabels['im_gen_trans'], im_gen_trans, resize=self.image_display_size)
-        change_im(self.im_Qlabels['im_sim'], self.sensor_data['im_sim'], resize=self.image_display_size)
-        im_sim_trans = self.transform_image(self.sensor_data['im_sim'])
-        change_im(self.im_Qlabels['im_sim_trans'], im_sim_trans, resize=self.image_display_size)
+        # get transformed images
+        self.sensor_data['T(Xr)'] = self.transform_image(gui_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
+        self.sensor_data['G(T(Xr))'] = self.generator.get_prediction(self.sensor_data['T(Xr)'])
+        self.sensor_data['T(G(Xr))'] = self.transform_image(self.sensor_data['G(Xr)'])
+        self.sensor_data['T(G(Xr))_'] = self.sensor_data['T(G(Xr))']
+        self.sensor_data['T(Xs)'] = self.transform_image(self.sensor_data['Xs'])
+
+        # display images
+        for im_pair in self.im_pair_names:
+            for im_name in im_pair:
+                change_im(self.im_Qlabels[im_name], self.sensor_data[im_name], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['T(Xr)'], self.sensor_data['T(Xr)'], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['G(T(Xr))'], self.sensor_data['G(T(Xr))'], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['G(Xr)'], self.sensor_data['G(Xr)'], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['T(G(Xr))'], self.sensor_data['T(G(Xr))'], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['Xs'], self.sensor_data['Xs'], resize=self.image_display_size)
+        # change_im(self.im_Qlabels['T(Xs)'], self.sensor_data['T(Xs)'], resize=self.image_display_size)
 
     '''
     metrics/error info updaters
     '''
-    def get_metrics_errors(self, im_trans_dict):
+    def get_metrics_errors(self):
         metrics = {}
-        metrics['real'] = self.metrics.get_metrics(self.sensor_data['im_real'], im_trans_dict['real'])
-        metrics['gen'] = self.metrics.get_metrics(self.sensor_data['im_sim'], im_trans_dict['gen'])
-        metrics['sim'] = self.metrics.get_metrics(self.sensor_data['im_sim'], im_trans_dict['sim'])
-
         errors = {}
-        errors['real'] = self.pose_esimator_real.get_error(self.sensor_data['im_real'], self.sensor_data['poses'])
-        errors['real_trans'] = self.pose_esimator_real.get_error(im_trans_dict['real'], self.sensor_data['poses'])
-        errors['gen'] = self.pose_esimator_sim.get_error(self.sensor_data['im_gen'], self.sensor_data['poses'])
-        errors['gen_trans'] = self.pose_esimator_sim.get_error(im_trans_dict['gen'], self.sensor_data['poses'])
-        errors['sim'] = self.pose_esimator_sim.get_error(self.sensor_data['im_sim'], self.sensor_data['poses'])
-        errors['sim_trans'] = self.pose_esimator_sim.get_error(im_trans_dict['sim'], self.sensor_data['poses'])
+        for im_pair in self.im_pair_names:
+            metrics[str(im_pair)] = self.metrics.get_metrics(self.sensor_data[im_pair[0]], self.sensor_data[im_pair[1]])
+            errors[str(im_pair)] = {}
+            for im_name in im_pair:
+                # decide whether to use real or simulated space pose estimation
+                if 'Xs' in im_name or 'G' in im_name:
+                    errors[str(im_pair)][im_name] = self.pose_esimator_sim.get_error(self.sensor_data[im_name], self.sensor_data['poses'])
+                else:
+                    errors[str(im_pair)][im_name] = self.pose_esimator_real.get_error(self.sensor_data[im_name], self.sensor_data['poses'])
 
-        for im_type in ['real', 'gen', 'sim']:
-            self.display_metrics(metrics[im_type], im_type)
-            self.display_errors({'Norm': errors[im_type], 'Trans': errors[im_type+'_trans']}, im_type)
+            self.display_metrics(metrics[str(im_pair)], str(im_pair))
+            self.display_errors(errors[str(im_pair)], str(im_pair))
 
     def display_metrics(self, metrics, label):
         text = ''
@@ -487,7 +446,7 @@ if __name__ == '__main__':
     parser.add_argument('--image_path', type=str, help='image file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/tap/128x128/csv_train/images/image_1.png'))
     parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv'))
     parser.add_argument('--generator_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth'))
-    parser.add_argument('--pose_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'))
+    parser.add_argument('--pose_path', type=str, help='pose net weights file to use', default=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'))
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
