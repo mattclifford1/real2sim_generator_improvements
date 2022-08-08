@@ -389,12 +389,6 @@ class make_app(QMainWindow):
         for im_pair in self.im_pair_names:
             for im_name in im_pair:
                 change_im(self.im_Qlabels[im_name], self.sensor_data[im_name], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['T(Xr)'], self.sensor_data['T(Xr)'], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['G(T(Xr))'], self.sensor_data['G(T(Xr))'], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['G(Xr)'], self.sensor_data['G(Xr)'], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['T(G(Xr))'], self.sensor_data['T(G(Xr))'], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['Xs'], self.sensor_data['Xs'], resize=self.image_display_size)
-        # change_im(self.im_Qlabels['T(Xs)'], self.sensor_data['T(Xs)'], resize=self.image_display_size)
 
     '''
     metrics/error info updaters
