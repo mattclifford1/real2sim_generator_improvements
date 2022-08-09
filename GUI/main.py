@@ -1,8 +1,6 @@
 import sys
 import argparse
-import threading
-import time
-import pickle
+from functools import partial
 import os
 import pandas as pd
 
@@ -36,8 +34,11 @@ class make_app(QMainWindow):
         self.init_widgets()
         self.init_images()
         self.init_layout()
-        self.image_display_size = (200, 200)
+        # self.image_display_size = (200, 200)
+        # self.image_display_size = (128, 128)
+        self.image_display_size = (175, 175)
         self.display_images()
+        self.reset_sliders()
 
     def set_window(self):
         '''
@@ -75,7 +76,7 @@ class make_app(QMainWindow):
         else:
             self.sensor_data['Xs'] = np.zeros([128, 128, 1], dtype=np.uint8)
 
-        # self.im_Qlabels['colour_output'].mousePressEvent = self.image_click
+        # self.widgets['image']['colour_output'].mousePressEvent = self.image_click
         # hold video frames
         # dummy_frame = [self.dummy_im]*2
         # self.input_frames = {'UI_colour_original':dummy_frame,
@@ -86,25 +87,36 @@ class make_app(QMainWindow):
         '''
         create all the widgets we need and init params
         '''
-        self.widgets = {'button': {}, 'slider': {}, 'checkbox': {}, 'label': {}}
+        # define what sliders we are using
+        self.sliders = {
+                   'rotation':{'min':-180, 'max':180, 'init_value':0, 'value_change':[partial(self.generic_value_change, 'rotation', normalise=None), self.display_images], 'release': [self.display_images]},
+                   'blur':{'min':0, 'max':40, 'init_value':0, 'value_change':[partial(self.generic_value_change, 'blur', normalise='odd')], 'release': [self.display_images]},
+                   'brightness':{'min':-255, 'max':255, 'init_value':0, 'value_change':[partial(self.generic_value_change, 'brightness', normalise=255)], 'release': [self.display_images]},
+                   'zoom':{'min':10, 'max':400, 'init_value':100, 'value_change':[partial(self.generic_value_change, 'zoom', normalise=100), self.display_images], 'release': [self.display_images]},
+                   'x_shift':{'min':-100, 'max':100, 'init_value':0, 'value_change':[partial(self.generic_value_change, 'x_shift', normalise=100), self.display_images], 'release': [self.display_images]},
+                   'y_shift':{'min':-100, 'max':100, 'init_value':0, 'value_change':[partial(self.generic_value_change, 'y_shift', normalise=100), self.display_images], 'release': [self.display_images]},
+                   }
 
         '''images'''
+        # set up layout of images
         self.im_pair_names = [
                               ('Xr', 'T(Xr)'),
-                              ('G(Xr)', 'T(G(Xr))_'),
                               ('Xs', 'T(Xs)'),
-                              ('G(T(Xr))', 'T(G(Xr))'),
+                              ('G(Xr)', 'T(G(Xr))'),
+                              ('G(T(Xr))', 'T(G(Xr))_'),
                               ]
-        self.im_Qlabels = {}
+        # widget dictionary store
+        self.widgets = {'button': {}, 'slider': {}, 'checkbox': {}, 'label': {}, 'image':{}}
         for im_pair in self.im_pair_names:
             for im_name in im_pair:
                 # image widget
-                self.im_Qlabels[im_name] = QLabel(self)
-                self.im_Qlabels[im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.widgets['image'][im_name] = QLabel(self)
+                self.widgets['image'][im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
                 # image label
                 self.widgets['label'][im_name] = QLabel(self)
                 self.widgets['label'][im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.widgets['label'][im_name].setText(im_name)
+                # self.widgets['label'][im_name].setContentsMargins(0,0,0,0)
             # metrics info
             self.widgets['label'][str(im_pair)+'_metrics'] = QLabel(self)
             self.widgets['label'][str(im_pair)+'_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -134,61 +146,24 @@ class make_app(QMainWindow):
         self.widgets['button']['reset_sliders'].clicked.connect(self.reset_sliders)
         self.widgets['button']['force_update'] = QPushButton('Update', self)
         self.widgets['button']['force_update'].clicked.connect(self.display_images)
-        # self.button_image2 = QPushButton('Choose Image 2', self)
-        # self.button_image2.clicked.connect(self.choose_image_compare)
-        '''checkboxes'''
-        # self.widgets['checkbox']['real_im'] = QCheckBox('Real Image', self)
-        # self.widgets['checkbox']['real_im'].toggled.connect(self.copy_ref_im)
-        # self.run_generator = False
-        # self.widgets['checkbox']['run_generator'] = QCheckBox('Run Generator', self)
-        # self.widgets['checkbox']['run_generator'].toggled.connect(self.toggle_generator)
-        # self.widgets['checkbox']['run_generator'].setEnabled(False)
+
         '''sliders'''
-        # rotation
         self.im_trans_params = {}
-        self.widgets['slider']['rotation'] = QSlider(Qt.Orientation.Horizontal)
-        self.widgets['slider']['rotation'].setMinimum(-180)
-        self.widgets['slider']['rotation'].setMaximum(180)
-        self.widgets['slider']['rotation'].valueChanged.connect(self.rotate_value_change)
-        self.widgets['slider']['rotation'].valueChanged.connect(self._display_images_quick)
-        self.widgets['slider']['rotation'].sliderReleased.connect(self.display_images)
-        self.im_trans_params['angle_to_rotate'] = 0
-        self.widgets['slider']['rotation'].setValue(self.im_trans_params['angle_to_rotate'])
-        self.widgets['label']['rotation'] = QLabel(self)
-        self.widgets['label']['rotation'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['rotation'].setText('Rotation:')
-        self.widgets['label']['rotation_value'] = QLabel(self)
-        self.widgets['label']['rotation_value'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['rotation_value'].setText(str(self.im_trans_params['angle_to_rotate']))
-        # guassian blur
-        self.widgets['slider']['blur'] = QSlider(Qt.Orientation.Horizontal)
-        self.widgets['slider']['blur'].setMinimum(0)
-        self.widgets['slider']['blur'].setMaximum(40)
-        self.widgets['slider']['blur'].valueChanged.connect(self.blur_value_change)
-        self.widgets['slider']['blur'].sliderReleased.connect(self.display_images)
-        self.im_trans_params['guass_blur_kern_size'] = 0
-        self.widgets['slider']['blur'].setValue(self.im_trans_params['guass_blur_kern_size'])
-        self.widgets['label']['blur'] = QLabel(self)
-        self.widgets['label']['blur'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['blur'].setText('Blur:')
-        self.widgets['label']['blur_value'] = QLabel(self)
-        self.widgets['label']['blur_value'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['blur_value'].setText(str(self.im_trans_params['guass_blur_kern_size']))
-        # brightness
-        self.widgets['slider']['brightness'] = QSlider(Qt.Orientation.Horizontal)
-        self.widgets['slider']['brightness'].setMinimum(-255)
-        self.widgets['slider']['brightness'].setMaximum(255)
-        self.widgets['slider']['brightness'].valueChanged.connect(self.brightness_value_change)
-        self.widgets['slider']['brightness'].valueChanged.connect(self._display_images_quick)
-        self.widgets['slider']['brightness'].sliderReleased.connect(self.display_images)
-        self.im_trans_params['brightness_adjustment'] = 0
-        self.widgets['slider']['brightness'].setValue(self.im_trans_params['brightness_adjustment'])
-        self.widgets['label']['brightness'] = QLabel(self)
-        self.widgets['label']['brightness'].setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.widgets['label']['brightness'].setText('Brightness:')
-        self.widgets['label']['brightness_value'] = QLabel(self)
-        self.widgets['label']['brightness_value'].setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.widgets['label']['brightness_value'].setText(str(self.im_trans_params['brightness_adjustment']))
+        for key in self.sliders.keys():
+            self.widgets['slider'][key] = QSlider(Qt.Orientation.Horizontal)
+            self.widgets['slider'][key].setMinimum(self.sliders[key]['min'])
+            self.widgets['slider'][key].setMaximum(self.sliders[key]['max'])
+            for func in self.sliders[key]['value_change']:
+                self.widgets['slider'][key].valueChanged.connect(func)
+            for func in self.sliders[key]['release']:
+                self.widgets['slider'][key].sliderReleased.connect(func)
+            self.im_trans_params[key] = self.sliders[key]['init_value']
+            self.widgets['label'][key] = QLabel(self)
+            self.widgets['label'][key].setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.widgets['label'][key].setText(key+':')
+            self.widgets['label'][key+'_value'] = QLabel(self)
+            self.widgets['label'][key+'_value'].setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.widgets['label'][key+'_value'].setText(str(self.im_trans_params[key]))
 
     def init_layout(self):
         '''
@@ -216,14 +191,14 @@ class make_app(QMainWindow):
         for im_pair in self.im_pair_names:
             self.layout.addWidget(self.widgets['label'][im_pair[0]], start_im-1+im_row*(im_height+button), 0, button, im_width)
             self.layout.addWidget(self.widgets['label'][im_pair[1]], start_im-1+im_row*(im_height+button), im_width+button, button, im_width)
-            self.layout.addWidget(self.im_Qlabels[im_pair[0]], start_im+im_row*(im_height+button), 0,   im_height, im_width)
-            self.layout.addWidget(self.im_Qlabels[im_pair[1]], start_im+im_row*(im_height+button), im_width+button, im_height, im_width)
+            self.layout.addWidget(self.widgets['image'][im_pair[0]], start_im+im_row*(im_height+button), 0,   im_height, im_width)
+            self.layout.addWidget(self.widgets['image'][im_pair[1]], start_im+im_row*(im_height+button), im_width+button, im_height, im_width)
             # metircs info
             self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics'], start_im+im_row*(im_height+button)+1, (im_width+button)*2, button, button)
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+button, button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+button, im_height, button)
             # errors info
             self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*2), button, button)
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*3), button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*3), im_height, button)
             im_row += 1
 
         # load files
@@ -242,8 +217,7 @@ class make_app(QMainWindow):
         # i += 1
 
         # sliders
-        sliders = ['rotation', 'blur', 'brightness']
-        for slider in sliders:
+        for slider in self.sliders.keys():
             self.layout.addWidget(self.widgets['slider'][slider],   button*i, start_controls+button, button, slider_width)
             self.layout.addWidget(self.widgets['label'][slider],    button*i, start_controls,   button, button)
             self.layout.addWidget(self.widgets['label'][slider+'_value'], button*i, start_controls+button+slider_width,   button, button)
@@ -303,42 +277,28 @@ class make_app(QMainWindow):
         except:
             self.statusBar().showMessage('Cancelled Load')
 
-    # checkboxes
-    def copy_ref_im(self):
-        if self.copy_or_real == 'Real':
-            self.copy_or_real = 'Copy'
-            self.widgets['checkbox']['run_generator'].setEnabled(False)
-        elif self.copy_or_real == 'Copy':
-            self.copy_or_real = 'Real'
-            self.widgets['checkbox']['run_generator'].setEnabled(True)
-        self.load_real_image()
-        self.display_images()
-
-    def toggle_generator(self):
-        self.run_generator = not self.run_generator
-        self.load_real_image()
-        self.display_images()
-
-    # sliders
-    def rotate_value_change(self):
-        self.im_trans_params['angle_to_rotate'] = self.widgets['slider']['rotation'].value()
-        self.widgets['label']['rotation_value'].setText(str(self.im_trans_params['angle_to_rotate']))
-
-    def blur_value_change(self):
-        self.im_trans_params['guass_blur_kern_size'] = (int(self.widgets['slider']['blur'].value()/2)*2) + 1    # need to make kernel size odd
-        if self.im_trans_params['guass_blur_kern_size'] == 1:
-            self.im_trans_params['guass_blur_kern_size'] = 0
-        self.widgets['label']['blur_value'].setText(str(self.im_trans_params['guass_blur_kern_size']))
-
-    def brightness_value_change(self):
-        self.im_trans_params['brightness_adjustment'] = self.widgets['slider']['brightness'].value()
-        self.widgets['label']['brightness_value'].setText(str(self.im_trans_params['brightness_adjustment']))
-        self.im_trans_params['brightness_adjustment'] = self.im_trans_params['brightness_adjustment']/255
+    # sliders value changes
+    def generic_value_change(self, key, normalise=None):
+        if normalise == 'odd':
+            self.im_trans_params[key] = (int(self.widgets['slider'][key].value()/2)*2) + 1    # need to make kernel size odd
+            if self.im_trans_params[key] == 1:
+                self.im_trans_params[key] = 0
+        else:
+            self.im_trans_params[key] = self.widgets['slider'][key].value()
+        if type(normalise) is int:
+            self.im_trans_params[key] = self.im_trans_params[key]/normalise
+        # display the updated value
+        value_str = str(self.im_trans_params[key])
+        disp_len = 4
+        if len(value_str) > disp_len:
+            value_str = value_str[:disp_len]
+        elif len(value_str) < disp_len:
+            value_str = ' '*(disp_len-len(value_str)) + value_str
+        self.widgets['label'][key+'_value'].setText(value_str)
 
     def reset_sliders(self):
-        self.widgets['slider']['rotation'].setValue(0)
-        self.widgets['slider']['blur'].setValue(0)
-        self.widgets['slider']['brightness'].setValue(0)
+        for key in self.sliders.keys():
+            self.widgets['slider'][key].setValue(self.sliders[key]['init_value'])
         self.display_images()
 
     '''
@@ -361,12 +321,6 @@ class make_app(QMainWindow):
 
         self.sensor_data['Xr'] = gui_utils.process_im(self.sensor_data['im_raw'], data_type='real')
         self.sensor_data['G(Xr)'] = self.generator.get_prediction(self.sensor_data['Xr'])
-        # if self.copy_or_real == 'Real':
-        #     self.sensor_data['im_compare'] = self.sensor_data['Xr'].copy()
-        #     if self.run_generator == True:
-        #         self.sensor_data['im_compare'] = self.generator.get_prediction(self.sensor_data['im_compare'])
-        # elif self.copy_or_real == 'Copy':
-        #     self.sensor_data['im_compare'] = self.sensor_data['Xs'].copy()
 
     def transform_image(self, image):
         return gui_utils.transform_image(image, self.im_trans_params)
@@ -374,8 +328,6 @@ class make_app(QMainWindow):
     def display_images(self):
         self._display_images_quick()
         self.get_metrics_errors()
-        # self.get_metrics_errors({'real':self.sensor_data['T(Xr)'], 'gen':self., 'sim':self.sensor_data['T(Xs)']})
-        # self.get_metrics_errors(self.sensor_data['T(Xr)'])
 
     def _display_images_quick(self):
         # get transformed images
@@ -388,7 +340,7 @@ class make_app(QMainWindow):
         # display images
         for im_pair in self.im_pair_names:
             for im_name in im_pair:
-                change_im(self.im_Qlabels[im_name], self.sensor_data[im_name], resize=self.image_display_size)
+                change_im(self.widgets['image'][im_name], self.sensor_data[im_name], resize=self.image_display_size)
 
     '''
     metrics/error info updaters

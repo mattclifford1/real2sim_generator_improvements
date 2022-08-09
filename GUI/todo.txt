@@ -1,30 +1,11 @@
 todo:
 
-- change to pyqt6
-
-- open images from csv dataframe so we have pose data too
-
-- select what networks to use
-  - pose
-  - real2sim
-
-- image loading back end
-  - real2sim estimation
-  - copy button
+- checkbox to select wheteher to update metrics as sliders are moved
 
 - image augmentation
   - contrast
   - saturation
-  - zoom
   - rotation around point from click
-  - etc?
-
-
-- scroll through image folder
-
-
-- run evaluation
-  - how to choose what metrics? (checkboxes?)
 
 
 - INFO
@@ -32,10 +13,3 @@ todo:
   - what dataset using
 
   - button to save ims with metrics to file
-
-
-
-
-NOTES:
-only works with PyQt5==5.14.2 on X.org display server weirdly not latest version
-(use wayland?)

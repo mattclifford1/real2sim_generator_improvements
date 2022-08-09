@@ -3,6 +3,7 @@ import sys; sys.path.append('..'); sys.path.append('.')
 import torch
 import torch.nn as nn
 import numpy as np
+import warnings
 
 from torchmetrics import StructuralSimilarityIndexMeasure as SSIM
 from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure as MSSIM
@@ -45,16 +46,18 @@ class im_metrics():
         self.metrics = {}
         self.metrics['MAE'] = nn.L1Loss()
         self.metrics['MSE'] = nn.MSELoss()
-        self.metrics['SSIM'] = SSIM()
-        self.metrics['MSSIM'] = MSSIM(kernel_size=7)
         self.metrics['NLPD'] = LaplacianPyramid(k=1).to(self.device)
+        # self.metrics['NLPD_2'] = LaplacianPyramid(k=2).to(self.device)
+        # self.metrics['NLPD_3'] = LaplacianPyramid(k=3).to(self.device)
         self.metrics['PSNR'] = PSNR().to(self.device)
         self.metrics['UIQI'] = UIQI
         # self.metrics['SDI'] = SDI() # gives nan
         # self.metrics['LPIPS_alex'] = grey_to_3_channel_input(LPIPS(net_type='alex').to(self.device))
-        self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
-        # self.metrics['NLPD_2'] = LaplacianPyramid(k=2).to(self.device)
-        # self.metrics['NLPD_3'] = LaplacianPyramid(k=3).to(self.device)
+        with warnings.catch_warnings():    # we don't care about the warnings these give
+            warnings.simplefilter("ignore")
+            self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
+            self.metrics['SSIM'] = SSIM()
+            self.metrics['MSSIM'] = MSSIM(kernel_size=7)
 
     def get_metrics(self, im_ref, im_comp):
         im_ref = preprocess_numpy_image(im_ref).to(device=self.device, dtype=torch.float)

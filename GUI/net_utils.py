@@ -56,7 +56,6 @@ class pose_estimation():
         weights_path = self.sim_or_real_net(weights_path)
         if os.path.isfile(weights_path):
             self.load_normalisation(weights_path)
-            print(weights_path)
             load_weights(self.net, weights_path)
         else:
             print('*******\n*******\nCannot load pose estimation weights path: '+str(weights_path))
