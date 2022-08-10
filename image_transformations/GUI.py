@@ -15,10 +15,10 @@ from PyQt6.QtWidgets import QStyle, QStyleOptionSlider
 from PyQt6.QtCore import QRect, QPoint, Qt
 
 import sys; sys.path.append('..'); sys.path.append('.')
-from gui_utils import change_im, load_image
-import gui_utils
-import net_utils
-import metrics_utils
+from image_utils import change_im, load_image
+import image_utils
+import networks
+import metrics
 
 class make_app(QMainWindow):
     def __init__(self, app, args):
@@ -27,10 +27,10 @@ class make_app(QMainWindow):
         self.app = app
         # self.set_window()
         self.copy_or_real = 'Copy'
-        self.generator = net_utils.generator(self.args.generator_path)
-        self.pose_esimator_sim = net_utils.pose_estimation(self.args.pose_path, sim=True)
-        self.pose_esimator_real = net_utils.pose_estimation(self.args.pose_path, sim=False)
-        self.metrics = metrics_utils.im_metrics()
+        self.generator = networks.generator(self.args.generator_path)
+        self.pose_esimator_sim = networks.pose_estimation(self.args.pose_path, sim=True)
+        self.pose_esimator_real = networks.pose_estimation(self.args.pose_path, sim=False)
+        self.metrics = metrics.im_metrics()
         self.init_widgets()
         self.init_images()
         self.init_layout()
@@ -313,17 +313,17 @@ class make_app(QMainWindow):
         for pose in poses:
             self.sensor_data['poses'][pose] = self.df.iloc[self.im_num][pose]
         self.sensor_data['Xs'] = load_image(image_path)
-        self.sensor_data['Xs'] = gui_utils.process_im(self.sensor_data['Xs'], data_type='sim')
+        self.sensor_data['Xs'] = image_utils.process_im(self.sensor_data['Xs'], data_type='sim')
 
     def load_real_image(self):
         image_path = os.path.join(self.im_real_dir, self.df.iloc[self.im_num]['sensor_image'])
-        self.sensor_data['im_raw'] = gui_utils.load_and_crop_raw_real(image_path)
+        self.sensor_data['im_raw'] = image_utils.load_and_crop_raw_real(image_path)
 
-        self.sensor_data['Xr'] = gui_utils.process_im(self.sensor_data['im_raw'], data_type='real')
+        self.sensor_data['Xr'] = image_utils.process_im(self.sensor_data['im_raw'], data_type='real')
         self.sensor_data['G(Xr)'] = self.generator.get_prediction(self.sensor_data['Xr'])
 
     def transform_image(self, image):
-        return gui_utils.transform_image(image, self.im_trans_params)
+        return image_utils.transform_image(image, self.im_trans_params)
 
     def display_images(self):
         self._display_images_quick()
@@ -331,7 +331,7 @@ class make_app(QMainWindow):
 
     def _display_images_quick(self):
         # get transformed images
-        self.sensor_data['T(Xr)'] = self.transform_image(gui_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
+        self.sensor_data['T(Xr)'] = self.transform_image(image_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
         self.sensor_data['G(T(Xr))'] = self.generator.get_prediction(self.sensor_data['T(Xr)'])
         self.sensor_data['T(G(Xr))'] = self.transform_image(self.sensor_data['G(Xr)'])
         self.sensor_data['T(G(Xr))_'] = self.sensor_data['T(G(Xr))']
@@ -382,7 +382,7 @@ class make_app(QMainWindow):
         self.df = pd.read_csv(csv_file)
         self.im_num = 0   # row of csv dataset to use
         self.im_sim_dir = os.path.join(os.path.dirname(csv_file), 'images')
-        self.im_real_dir = os.path.join(os.path.dirname(gui_utils.get_real_csv_given_sim(csv_file)), 'images')
+        self.im_real_dir = os.path.join(os.path.dirname(image_utils.get_real_csv_given_sim(csv_file)), 'images')
         self.load_sim_image()
         self.load_real_image()
 
