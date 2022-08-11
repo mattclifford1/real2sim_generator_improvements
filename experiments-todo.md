@@ -1,6 +1,6 @@
 # Experiments that need running still
 TODO: code:
-- get average and std of training/validation runs
+- get average and std of training/validation runs (need to plot std) run more runs!
 - plot of MAE for val set PoseNet
   - real
   - sim
