@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import sys; sys.path.append('..'); sys.path.append('.')
 import downstream_task.networks.model_128 as m_128
@@ -39,16 +40,28 @@ class make_plots():
         self.load_sim_image()
         self.load_real_image()
         preds = {}
-        preds['P(Xs)'] = self.pose_esimator_sim.get_prediction(self.sensor_data['Xs'])
-        preds['P(G(Xr))'] = self.pose_esimator_sim.get_prediction(self.sensor_data['G(Xr)'])
-        preds['P(Xr)'] = self.pose_esimator_real.get_prediction(self.sensor_data['Xr'])
-        labels = self.pose_esimator_sim.normalise_y_labels(self.sensor_data['Y'])
+        preds['P(Xs)'] = self.pose_esimator_sim.get_prediction(self.sensor_data['Xs']).cpu().detach().numpy()
+        preds['P(G(Xr))'] = self.pose_esimator_sim.get_prediction(self.sensor_data['G(Xr)']).cpu().detach().numpy()
+        preds['P(Xr)'] = self.pose_esimator_real.get_prediction(self.sensor_data['Xr']).cpu().detach().numpy()
+        labels = self.pose_esimator_sim.normalise_y_labels(self.sensor_data['Y']).cpu().detach().numpy()
         return preds, labels
 
     def run(self):
-        for i in range(len(self.df)):
+        poses = self.pose_esimator_sim.y_names
+        fig, ax = plt.subplots(nrows=1, ncols=len(poses), figsize=(12,5))
+        data_size = 5 if self.args.dev else len(self.df)
+        for i in tqdm(range(data_size)):
             preds, labels = self.get_preds(i)
-            print(labels)
+            for j, col in enumerate(ax):
+                col.scatter(labels[j], preds['P(Xr)'][0][j], color='g', s=0.5)
+                col.scatter(labels[j], preds['P(Xs)'][0][j], color='b', s=0.5)
+                col.scatter(labels[j], preds['P(G(Xr))'][0][j], color='r', s=0.5)
+        for j, col in enumerate(ax):
+            col.set_title(poses[j])
+            x = [-1, 1]
+            col.plot(x, x, color='black')
+        plt.show()
+
 
 
     '''
@@ -79,6 +92,8 @@ if __name__ == '__main__':
     parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv'))
     parser.add_argument('--generator_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth'))
     parser.add_argument('--pose_path', type=str, help='pose net weights file to use', default=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'))
+    parser.add_argument("--dev", default=False, action='store_true', help='dev runs on small datasize')
+
     args = parser.parse_args()
 
     plotter = make_plots(args)
