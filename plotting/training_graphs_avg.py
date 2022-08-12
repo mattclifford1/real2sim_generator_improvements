@@ -15,7 +15,6 @@ notes: surface_3d shear pose estimations MAES:
 def get_avg_of_runs(dir, csv_file='training_stats.csv'):
     Ys = []
     for run in os.listdir(dir):
-        print(run)
         path = os.path.join(dir, run, csv_file)
         df = pd.read_csv(path)
         Ys.append(df[cols[i]].values[1:])
@@ -27,6 +26,7 @@ def get_avg_of_runs(dir, csv_file='training_stats.csv'):
 if __name__ == '__main__':
     parser = ArgumentParser(description='Plot training graphs')
     parser.add_argument("--dir", default=os.path.join(os.path.expanduser('~'), 'summer-project', 'models', 'sim2real', 'matt'), help='path to folder where training graphs are within')
+    parser.add_argument("--std", default=False, action='store_true', help='plot standard deviation of all runs')
     ARGS = parser.parse_args()
 
     # define the  label:filepath   to plot
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     curves_to_plot = {
         ## ones to plot
         str(int(data_limits[7]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        # str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
+        str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         #
         # str(int(data_limits[2]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         # str(int(data_limits[7]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
@@ -53,7 +53,12 @@ if __name__ == '__main__':
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
         x, avg, std = get_avg_of_runs(dir)
-        ax.plot(x, avg, label=key)
+        p = ax.plot(x, avg, label=key)
+        if ARGS.std == True:
+            colour = p[0].get_color()
+            p = ax.plot(x, avg+std, color=colour)
+            p = ax.plot(x, avg-std, color=colour)
+
         ax.set_xlabel('Epoch')
     ax.set_title(cols[i])
     if cols[i] == 'Downstream MAE':
