@@ -36,7 +36,7 @@ if __name__ == '__main__':
     curves_to_plot = {
         ## ones to plot
         str(int(data_limits[7]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
+        # str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         #
         # str(int(data_limits[2]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         # str(int(data_limits[7]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
@@ -56,8 +56,9 @@ if __name__ == '__main__':
         p = ax.plot(x, avg, label=key)
         if ARGS.std == True:
             colour = p[0].get_color()
-            p = ax.plot(x, avg+std, color=colour)
-            p = ax.plot(x, avg-std, color=colour)
+            # ax.plot(x, avg+std, color=colour, alpha=0.7)
+            # ax.plot(x, avg-std, color=colour, alpha=0.7)
+            ax.fill_between(x, avg-std, avg+std, alpha=0.2, color=colour)
 
         ax.set_xlabel('Epoch')
     ax.set_title(cols[i])
