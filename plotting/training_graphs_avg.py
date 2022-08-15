@@ -25,7 +25,8 @@ def get_avg_of_runs(dir, csv_file='training_stats.csv'):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Plot training graphs')
-    parser.add_argument("--dir", default=os.path.join(os.path.expanduser('~'), 'summer-project', 'models', 'sim2real', 'matt'), help='path to folder where training graphs are within')
+    # parser.add_argument("--dir", default=os.path.join(os.path.expanduser('~'), 'summer-project', 'models', 'sim2real', 'matt'), help='path to folder where training graphs are within')
+    parser.add_argument("--dir", default=os.path.join('gan_models', 'training_stats-data_reduce'), help='path to folder where training graphs are within')
     parser.add_argument("--std", default=False, action='store_true', help='plot standard deviation of all runs')
     ARGS = parser.parse_args()
 
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     curves_to_plot = {
         ## ones to plot
         str(int(data_limits[7]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        # str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
+        str(int(data_limits[2]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         #
         # str(int(data_limits[2]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
         # str(int(data_limits[7]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
