@@ -117,6 +117,14 @@ class make_app(QMainWindow):
                 self.widgets['label'][im_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.widgets['label'][im_name].setText(im_name)
                 # self.widgets['label'][im_name].setContentsMargins(0,0,0,0)
+            # ssim images
+            ssim_name = 'SSIM('+str(im_pair)+')'
+            self.widgets['image'][ssim_name] = QLabel(self)
+            self.widgets['image'][ssim_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
+            # image label
+            self.widgets['label'][ssim_name] = QLabel(self)
+            self.widgets['label'][ssim_name].setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.widgets['label'][ssim_name].setText(ssim_name)
             # metrics info
             self.widgets['label'][str(im_pair)+'_metrics'] = QLabel(self)
             self.widgets['label'][str(im_pair)+'_metrics'].setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -183,22 +191,28 @@ class make_app(QMainWindow):
         # horizonal start values
         start_im = 1
         start_controls = 0#im_width*2+button
-        start_controls_row = (im_height+button)*3+button+start_im
-        start_metrics = im_width*2+button
 
         # display images
         im_row = 0
         for im_pair in self.im_pair_names:
-            self.layout.addWidget(self.widgets['label'][im_pair[0]], start_im-1+im_row*(im_height+button), 0, button, im_width)
-            self.layout.addWidget(self.widgets['label'][im_pair[1]], start_im-1+im_row*(im_height+button), im_width+button, button, im_width)
-            self.layout.addWidget(self.widgets['image'][im_pair[0]], start_im+im_row*(im_height+button), 0,   im_height, im_width)
-            self.layout.addWidget(self.widgets['image'][im_pair[1]], start_im+im_row*(im_height+button), im_width+button, im_height, im_width)
+            col = 0
+            self.layout.addWidget(self.widgets['label'][im_pair[0]], start_im-1+im_row*(im_height+button), (im_height+button)*col, button, im_width)
+            self.layout.addWidget(self.widgets['image'][im_pair[0]], start_im+im_row*(im_height+button), (im_height+button)*col,   im_height, im_width)
+            col += 1
+            self.layout.addWidget(self.widgets['label'][im_pair[1]], start_im-1+im_row*(im_height+button), (im_height+button)*col, button, im_width)
+            self.layout.addWidget(self.widgets['image'][im_pair[1]], start_im+im_row*(im_height+button), (im_height+button)*col, im_height, im_width)
+            col += 1
+            ssim_name = 'SSIM('+str(im_pair)+')'
+            self.layout.addWidget(self.widgets['label'][ssim_name], start_im-1+im_row*(im_height+button), (im_height+button)*col, button, im_width)
+            self.layout.addWidget(self.widgets['image'][ssim_name], start_im+im_row*(im_height+button), (im_height+button)*col, im_height, im_width)
+            col += 1
             # metircs info
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics'], start_im+im_row*(im_height+button)+1, (im_width+button)*2, button, button)
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+button, im_height, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics'], start_im+im_row*(im_height+button)+1, (im_height+button)*col, button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_metrics_info'], start_im+im_row*(im_height+button)+1, (im_height+button)*col+button, im_height, button)
+            col += 1
             # errors info
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*2), button, button)
-            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_width+button)*2+(button*3), im_height, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors'], start_im+im_row*(im_height+button)+1, (im_height+button)*col+(button*2), button, button)
+            self.layout.addWidget(self.widgets['label'][str(im_pair)+'_errors_info'], start_im+im_row*(im_height+button)+1, (im_height+button)*col+(button*3), im_height, button)
             im_row += 1
 
         # load files
@@ -326,10 +340,16 @@ class make_app(QMainWindow):
         return image_utils.transform_image(image, self.im_trans_params)
 
     def display_images(self):
-        self._display_images_quick()
+        self.get_image_data()
         self.get_metrics_errors()
+        self.update_image_widgets()
 
     def _display_images_quick(self):
+        # dont calc metrics/errors - just update widgets
+        self.get_image_data()
+        self.update_image_widgets()
+
+    def get_image_data(self):
         # get transformed images
         self.sensor_data['T(Xr)'] = self.transform_image(image_utils.process_im(self.sensor_data['im_raw'], data_type='real'))
         self.sensor_data['G(T(Xr))'] = self.generator.get_prediction(self.sensor_data['T(Xr)'])
@@ -337,10 +357,13 @@ class make_app(QMainWindow):
         self.sensor_data['T(G(Xr))_'] = self.sensor_data['T(G(Xr))']
         self.sensor_data['T(Xs)'] = self.transform_image(self.sensor_data['Xs'])
 
+    def update_image_widgets(self):
         # display images
         for im_pair in self.im_pair_names:
             for im_name in im_pair:
                 change_im(self.widgets['image'][im_name], self.sensor_data[im_name], resize=self.image_display_size)
+            ssim_name = 'SSIM('+str(im_pair)+')'
+            change_im(self.widgets['image'][ssim_name], self.sensor_data[ssim_name], resize=self.image_display_size)
 
     '''
     metrics/error info updaters
@@ -349,7 +372,10 @@ class make_app(QMainWindow):
         metrics = {}
         errors = {}
         for im_pair in self.im_pair_names:
-            metrics[str(im_pair)] = self.metrics.get_metrics(self.sensor_data[im_pair[0]], self.sensor_data[im_pair[1]])
+            ssim_name = 'SSIM('+str(im_pair)+')'
+            metric, ssim_full_im = self.metrics.get_metrics(self.sensor_data[im_pair[0]], self.sensor_data[im_pair[1]])
+            metrics[str(im_pair)] = metric
+            self.sensor_data[ssim_name] = ssim_full_im
             errors[str(im_pair)] = {}
             for im_name in im_pair:
                 # decide whether to use real or simulated space pose estimation

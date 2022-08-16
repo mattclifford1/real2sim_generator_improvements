@@ -58,8 +58,9 @@ class im_metrics():
             self.metrics['LPIPS_vgg'] = grey_to_3_channel_input(LPIPS(net_type='vgg').to(self.device))
             self.metrics['SSIM'] = SSIM()
             self.metrics['MSSIM'] = MSSIM(kernel_size=7)
+            self.ssim_full_image = SSIM(return_full_image=True, reduction=None) # separate function as bug in torchmetrics that requires reduction=False to return full image
 
-    def get_metrics(self, im_ref, im_comp):
+    def get_metrics(self, im_ref, im_comp, ssim_image=True):
         im_ref = preprocess_numpy_image(im_ref).to(device=self.device, dtype=torch.float)
         im_comp = preprocess_numpy_image(im_comp).to(device=self.device, dtype=torch.float)
         _scores = {}
@@ -74,13 +75,22 @@ class im_metrics():
             _scores[key].append(_score.cpu().detach().numpy())
             if key == 'MSSIM' or key == 'SSIM':
                 self.metrics[key].reset()   # clear mem buffer to stop overflow
-        return _scores
+
+        if ssim_image:
+            _, ssim_full_im = self.ssim_full_image(im_ref, im_comp)
+            self.ssim_full_image.reset()   # clear mem buffer to stop overflow
+            ssim_full_im = torch.squeeze(ssim_full_im, axis=0)
+            ssim_full_im = ssim_full_im.permute(1, 2, 0)
+            ssim_full_im = torch.clip(ssim_full_im, 0, 1)
+            return _scores, ssim_full_im.cpu().detach().numpy()
+        else:
+            return _scores
 
 if __name__ == '__main__':
     import os
     import pandas as pd
     import sys; sys.path.append('..'); sys.path.append('.')
-    import gui_utils
+    import image_utils
     sensor_data = {}
     csv_file = os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv')
     df = pd.read_csv(csv_file)
@@ -89,8 +99,8 @@ if __name__ == '__main__':
     image = df.iloc[im_num]['sensor_image']
     image_path = os.path.join(im_sim_dir, image)
 
-    sensor_data['im_reference'] = gui_utils.load_image(image_path)
-    sensor_data['im_reference'] = gui_utils.process_im(sensor_data['im_reference'], data_type='sim')
+    sensor_data['im_reference'] = image_utils.load_image(image_path)
+    sensor_data['im_reference'] = image_utils.process_im(sensor_data['im_reference'], data_type='sim')
     im_comp = np.clip(sensor_data['im_reference']+0.3, 0, 1)
 
 
@@ -98,7 +108,8 @@ if __name__ == '__main__':
     # metrics = m.get_metrics(sensor_data['im_reference'], im_comp)
     # print(metrics)
 
-    mssim = MSSIM()#kernel_size=3, sigma=1.0,betas=(0.01, 0.1, 0.3, 0.2, 0.1),)
+    metric = MSSIM()#kernel_size=3, sigma=1.0,betas=(0.01, 0.1, 0.3, 0.2, 0.1),)
+    metric = SSIM(return_full_image=True, reduction=None)
     im1 = preprocess_numpy_image(sensor_data['im_reference'])
     im2 = preprocess_numpy_image(im_comp)
 
@@ -106,4 +117,5 @@ if __name__ == '__main__':
     im2 = im1 * 0.75
     im1 = torch.nn.functional.interpolate(im1, 256)
     im2 = torch.nn.functional.interpolate(im2, 256)
-    print(mssim(im1, im2))
+    score = metric(im1, im2)
+    print(score)
