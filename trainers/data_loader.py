@@ -33,7 +33,7 @@ def get_params(val=False):
                   'stdiz':       False,
                   'normlz':      True,
                   'joint_aug':   False,
-                  'bbox':        [80,25,530,475],
+                  'bbox':        [80,25,530,475],   #[100,  0, 580, 480] digitac
                   'gray':        True,
                   'add_axis':    False
                   }
@@ -48,7 +48,7 @@ def get_params(val=False):
                   'stdiz':       False,
                   'normlz':      True,
                   'joint_aug':   False,
-                  'bbox':        [80,25,530,475],
+                  'bbox':        [80,25,530,475],    #[100,  0, 580, 480] digitac
                   'gray':        True,
                   'add_axis':    False
                   }
