@@ -17,8 +17,8 @@ def get_avg_of_runs(dir, csv_file='training_stats.csv'):
     for run in os.listdir(dir):
         path = os.path.join(dir, run, csv_file)
         df = pd.read_csv(path)
-        Ys.append(df[cols[i]].values[1:])
-    x = df['epoch'].values[1:]
+        Ys.append(df[cols[i]].values[0:])
+    x = df['epoch'].values[0:]
     Ys = np.array(Ys)
     return x, np.mean(Ys, axis=0), np.std(Ys, axis=0)
     # return x, df[cols[i]].values[1:], np.std(Ys, axis=0)
@@ -35,17 +35,28 @@ if __name__ == '__main__':
     train_routine = 'LR:0.0002_decay:0.1_BS:64'
     data_limits = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]
     curves_to_plot = {
-        ## full data
-        str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
+
+# ======full data  ===============================================
+        # str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
         str(int(data_limits[7]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
         # str(int(data_limits[7]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        # str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
+        str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
+# ===== 0.25 data  ===============================================
+        # str(int(data_limits[3]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[3])),
+        # str(int(data_limits[3]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[3])),
 
-        # 0.1 data
+        # str(int(data_limits[3]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[3])),
+        # str(int(data_limits[3]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[3])),
+
+# ===== 0.1 data ===============================================
         # str(int(data_limits[2]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
+        # str(int(data_limits[2]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[2])),
+
         # str(int(data_limits[2]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[2])),
+        # str(int(data_limits[2]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[2])),
+
     }
 
     cols = ['mean training loss', 'val MSE', 'val_SSIM', 'Downstream MAE']
@@ -54,7 +65,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(8,6))
     i = 0
     if cols[i] == 'Downstream MAE':
-        ax.plot(range(1,251), [0.041]*250, label='real pose net')
+        ax.plot(range(0,251), [0.041]*251, label='Expected Error on Real Data')
     for key in curves_to_plot.keys():
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
@@ -69,8 +80,8 @@ if __name__ == '__main__':
         ax.set_xlabel('Epoch')
     ax.set_title(cols[i])
     if cols[i] == 'Downstream MAE':
-        ax.set_ylabel('MAE')
+        ax.set_ylabel('Pose Estimation MAE')
         ax.set_ylim(0.02, 0.3)
-        ax.set_title('Downstream Task Performance')
+        # ax.set_title('Downstream Task Performance')
     ax.legend()
     plt.show()
