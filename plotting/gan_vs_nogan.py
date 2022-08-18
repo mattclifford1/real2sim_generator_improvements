@@ -36,11 +36,11 @@ if __name__ == '__main__':
     data_limits = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]
     curves_to_plot = {
         ## full data
-        # str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        # str(int(data_limits[7]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
+        str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
+        str(int(data_limits[7]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
-        str(int(data_limits[7]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
+        # str(int(data_limits[7]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
+        # str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
 
         # 0.1 data
