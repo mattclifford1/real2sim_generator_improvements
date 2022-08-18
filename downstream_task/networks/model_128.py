@@ -21,7 +21,7 @@ def load_weights(model, weights_path):
 
 
 class network(nn.Module):
-    def __init__(self, final_size=2):
+    def __init__(self, final_size=2, task='surface'):
         super(network, self).__init__()
         self.input_size = (1, 128, 128)
         self.conv_size = 256
@@ -30,17 +30,18 @@ class network(nn.Module):
         self.fc_layer_nums = [64, final_size]
         self.output_size = final_size
         self.dimensions = '_' + str(final_size) + 'd'
+        self.activation = nn.ELU if 'surface' in task else nn.ReLU
         self.contruct_layers()
 
     def contruct_layers(self):
         self.conv1 = ConvBlock(1, self.conv_size, self.kernel_size)
-        self.conv2 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size)
-        self.conv3 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size)
-        self.conv4 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size)
-        self.conv5 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size)
+        self.conv2 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size, activation=self.activation)
+        self.conv3 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size, activation=self.activation)
+        self.conv4 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size, activation=self.activation)
+        self.conv5 = ConvBlock(self.conv_size, self.conv_size, self.kernel_size, activation=self.activation)
 
-        self.fc1 = FullyConnectedLayer(1024, self.fc_layer_nums[0])
-        self.fc2 = FullyConnectedLayer(self.fc_layer_nums[0], self.fc_layer_nums[1])
+        self.fc1 = FullyConnectedLayer(1024, self.fc_layer_nums[0], activation=self.activation)
+        self.fc2 = FullyConnectedLayer(self.fc_layer_nums[0], self.fc_layer_nums[1], activation=self.activation)
 
     def forward(self, x):
         x = self.conv1(x)

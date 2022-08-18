@@ -44,7 +44,7 @@ class evaller:
 
 
     def get_pretrained_model(self):
-        self.model = m_128.network(final_size=int(self.model_task[0][-2]))
+        self.model = m_128.network(final_size=int(self.model_task[0][-2]), task=self.model_task[0])
         model_file = os.path.join(self.model_dir, self.model_name)
         load_weights(self.model, model_file)
         self.model.to(self.device)

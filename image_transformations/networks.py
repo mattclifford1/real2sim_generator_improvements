@@ -50,7 +50,7 @@ class pose_estimation():
         self.use_sim = sim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.get_task_from_checkpoint(weights_path)
-        self.net = pose_128.network(final_size=self.net_out_dims)
+        self.net = pose_128.network(final_size=self.net_out_dims, task=self.task[0])
         self.net.to(self.device)
         self.net.eval()
         weights_path = self.sim_or_real_net(weights_path)
