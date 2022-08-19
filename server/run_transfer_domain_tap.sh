@@ -11,8 +11,8 @@ lr="0.0002"
 task="surface_3d tap"
 
 job_name="pre_no_gans"
-time="0-8:00"
-data_size="1"
+time="0-5:00"
+data_size="0.1"
 
 # what pretrained model to use
 model=/user/work/mc15445/summer-project/models/sim2real/alex/trained_gans/[edge_2d]/128x128_[tap]_250epochs/checkpoints/best_generator.pth
