@@ -5,4 +5,5 @@ ram="64G"        # change these
 
 job_name="trans"
 time="0-12:00"
-sbatch -t $time -J $job_name -o $dir$lr'.out' -e $dir$lr'.err' --mem=$ram server/submit_job.sh ./image_transformations/submit_to_bc4.sh
+name="trans"
+sbatch -t $time -J $job_name -o $dir$name'.out' -e $dir$name'.err' --mem=$ram server/submit_job.sh ./image_transformations/submit_to_bc4.sh
