@@ -90,7 +90,24 @@ if __name__ == '__main__':
     parser.add_argument("--ram", default=False, action='store_true', help='load dataset into ram')
     ARGS = parser.parse_args()
 
-    e = evaller(ARGS.dir, data_task=ARGS.data_task, model_task=ARGS.model_task)
+    # e = evaller(ARGS.dir, data_task=ARGS.data_task, model_task=ARGS.model_task)
+    #
+    # mae =e.get_MAE()
+    # print(mae)
+    import itertools
+    import pandas as pd
+    task = ['edge_2d','surface_3d']
+    sampling = ['tap', 'shear']
+    domain = ['real', 'sim']
+    posenets = list(itertools.product(task, sampling, domain))
 
-    mae =e.get_MAE()
-    print(mae)
+    results = {'run':[0, 1]}
+    for net in tqdm(posenets, desc='posenets'):
+        results[str(net)] = []
+        for run in tqdm(results['run'], desc='runs', leave=False):
+            e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
+            mae = e.get_MAE()
+            results[str(net)].append(mae)
+
+        df = pd.DataFrame.from_dict(results)
+        df.to_csv('downstream_task/validation_results.csv')
