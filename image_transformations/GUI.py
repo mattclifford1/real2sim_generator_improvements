@@ -15,7 +15,8 @@ from PyQt6.QtWidgets import QStyle, QStyleOptionSlider
 from PyQt6.QtCore import QRect, QPoint, Qt
 
 import sys; sys.path.append('..'); sys.path.append('.')
-from image_utils import change_im, load_image
+from image_utils import load_image
+from gui_utils import change_im
 import image_utils
 import networks
 import metrics
