@@ -17,14 +17,14 @@ import metrics
 
 
 class loop_transforms():
-    def __init__(self, args):
+    def __init__(self, args, csv_path, generator_path, pose_path):
         self.args = args
-        self.generator = networks.generator(self.args.generator_path)
-        self.pose_esimator_sim = networks.pose_estimation(self.args.pose_path, sim=True)
-        self.pose_esimator_real = networks.pose_estimation(self.args.pose_path, sim=False)
+        self.generator = networks.generator(generator_path)
+        self.pose_esimator_sim = networks.pose_estimation(pose_path, sim=True)
+        self.pose_esimator_real = networks.pose_estimation(pose_path, sim=False)
         self.metrics = metrics.im_metrics()
         self.sensor_data = {'Xs':{}, 'poses':{}}
-        self.load_dataset(self.args.csv_path)
+        self.load_dataset(csv_path)
         self.run()
 
     def load_dataset(self, csv_file):
@@ -106,9 +106,12 @@ class loop_transforms():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--dir', type=str, help='base dir to use', default=os.path.join(os.path.expanduser('~'), 'summer-project'))
+
     parser.add_argument('--csv_path', type=str, help='csv file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_val/targets.csv'))
     parser.add_argument('--generator_path', type=str, help='generator weights file to use', default=os.path.join(os.path.expanduser('~'),'summer-project/models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth'))
     parser.add_argument('--pose_path', type=str, help='pose net weights file to use', default=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'))
+
     parser.add_argument("--dev", default=False, action='store_true', help='run on limited data')
     parser.add_argument("--ram", default=False, action='store_true', help='save dataset to ram')
     parser.add_argument("--plot", default=False, action='store_true', help='show plot of data')
@@ -119,5 +122,8 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
+    csv_path = os.path.join(args.dir, 'data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_val/targets.csv')
+    generator_path = os.path.join(args.dir, 'models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth')
+    pose_path = os.path.join(args.dir, 'models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth')
 
-    loop_transforms(args)
+    loop_transforms(args, csv_path, generator_path, pose_path)
