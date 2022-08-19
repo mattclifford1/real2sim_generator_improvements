@@ -8,7 +8,7 @@ epochs=250
 batch=64
 lr="0.0002"
 
-task="edge_2d tap"
+task="edge_2d shear"
 
 job_name="pre_no_gans"
 time="0-8:00"
