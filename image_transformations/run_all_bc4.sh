@@ -9,3 +9,4 @@ python image_transformations/eval_tranforms.py --trans blur --min 0 --max 30 --s
 python image_transformations/eval_tranforms.py --trans zoom --min 0.5 --max 3 --steps $STEPS --ram --dir $DIR &
 python image_transformations/eval_tranforms.py --trans x_shift --min -0.5 --max 0.5 --steps $STEPS --ram --dir $DIR &
 python image_transformations/eval_tranforms.py --trans y_shift --min -0.5 --max 0.5 --steps $STEPS --ram --dir $DIR &
+wait
