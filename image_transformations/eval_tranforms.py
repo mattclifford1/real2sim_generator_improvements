@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import sys; sys.path.append('..'); sys.path.append('.')
-from image_utils import change_im, load_image
+from image_utils import load_image
 import image_utils
 import networks
 import metrics
