@@ -91,7 +91,8 @@ def transform_image(image, params_dict={}):
 
     if 'blur' in params_dict.keys():
         if params_dict['blur'] > 0:
-            image = cv2.GaussianBlur(image,(params_dict['blur'], params_dict['blur']), cv2.BORDER_DEFAULT)
+            blur_odd = (int(params_dict['blur']/2)*2) + 1    # need to make kernel size odd
+            image = cv2.GaussianBlur(image,(blur_odd, blur_odd), cv2.BORDER_DEFAULT)
             if len(image.shape) == 2:
                 image = np.expand_dims(image, axis=2)
 
