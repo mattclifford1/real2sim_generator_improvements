@@ -10,8 +10,8 @@ lr="0.0002"
 
 
 job_name="pre_no_gans"
-time="0-8:00"
-data_size="1"
+time="0-5:00"
+data_size="0.1"
 
 task="edge_2d shear"
 # from scratch
