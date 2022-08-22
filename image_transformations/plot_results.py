@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 
-dir = os.path.join('image_transformations', 'results_val')
+dir = os.path.join('image_transformations', 'results_surface_val')
 results = {}
 for file in os.listdir(dir):
     if os.path.splitext(file)[1] == '.csv':
