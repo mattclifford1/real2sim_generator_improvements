@@ -70,7 +70,7 @@ class loop_transforms():
                 data[k].append(np.array(results[key][k]).mean())
 
         df = pd.DataFrame.from_dict(data)
-        df.to_csv(os.path.join('image_transformations', 'results', self.args.trans+'_'+str(self.args.min)+'_'+str(self.args.max)+'_'+str(self.args.steps)+'.csv'))
+        df.to_csv(os.path.join('image_transformations', 'results_surface', self.args.trans+'_'+str(self.args.min)+'_'+str(self.args.max)+'_'+str(self.args.steps)+'.csv'))
 
 
     def run(self):
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    csv_path = os.path.join(args.dir, 'data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_val/targets.csv')
+    csv_path = os.path.join(args.dir, 'data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv')
     generator_path = os.path.join(args.dir, 'models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth')
     pose_path = os.path.join(args.dir, 'models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth')
 
