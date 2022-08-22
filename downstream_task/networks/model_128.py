@@ -30,7 +30,8 @@ class network(nn.Module):
         self.fc_layer_nums = [64, final_size]
         self.output_size = final_size
         self.dimensions = '_' + str(final_size) + 'd'
-        self.activation = nn.ELU if 'surface' in task else nn.ReLU
+        # self.activation = nn.ELU if 'surface' in task else nn.ReLU
+        self.activation = nn.ELU if 'surface' in task else nn.ELU
         self.contruct_layers()
 
     def contruct_layers(self):
