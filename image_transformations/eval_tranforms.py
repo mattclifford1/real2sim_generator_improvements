@@ -17,9 +17,9 @@ import metrics
 
 
 class loop_transforms():
-    def __init__(self, args, csv_path, generator_path, pose_path):
+    def __init__(self, args, csv_path, pose_path, generator_path=None):
         self.args = args
-        self.generator = networks.generator(generator_path)
+        # self.generator = networks.generator(generator_path)
         self.pose_esimator_sim = networks.pose_estimation(pose_path, sim=True)
         self.pose_esimator_real = networks.pose_estimation(pose_path, sim=False)
         self.metrics = metrics.im_metrics()
@@ -70,7 +70,7 @@ class loop_transforms():
                 data[k].append(np.array(results[key][k]).mean())
 
         df = pd.DataFrame.from_dict(data)
-        df.to_csv(os.path.join('image_transformations', 'results_edge', self.args.trans+'_'+str(self.args.min)+'_'+str(self.args.max)+'_'+str(self.args.steps)+'.csv'))
+        df.to_csv(os.path.join('image_transformations', 'results_surface', self.args.trans+'_'+str(self.args.min)+'_'+str(self.args.max)+'_'+str(self.args.steps)+'.csv'))
 
 
     def run(self):
@@ -122,8 +122,8 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    csv_path = os.path.join(args.dir, 'data/Bourne/tactip/sim/edge_2d/shear/128x128/csv_train/targets.csv')
-    generator_path = os.path.join(args.dir, 'models/sim2real/matt/edge_2d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth')
-    pose_path = os.path.join(args.dir, 'models/pose_estimation/edge_2d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth')
+    csv_path = os.path.join(args.dir, 'data/Bourne/tactip/sim/surface_3d/shear/128x128/csv_train/targets.csv')
+    # generator_path = os.path.join(args.dir, 'models/sim2real/matt/surface_3d/shear/pretrained_edge_tap/no_ganLR:0.0002_decay:0.1_BS:64_DS:1.0/run_0/models/best_generator.pth')
+    pose_path = os.path.join(args.dir, 'models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth')
 
-    loop_transforms(args, csv_path, generator_path, pose_path)
+    loop_transforms(args, csv_path, pose_path)
