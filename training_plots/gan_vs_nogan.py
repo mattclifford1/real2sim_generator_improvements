@@ -37,11 +37,11 @@ if __name__ == '__main__':
     curves_to_plot = {
 
 # ======full data  ===============================================
-        # str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
+        str(int(data_limits[7]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
         str(int(data_limits[7]*100))+'% Data GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
         # str(int(data_limits[7]*100))+'% Data [transferred net] No GAN': os.path.join('surface_3d', 'shear', pretrained, 'no_gan'+train_routine+'_DS:'+str(data_limits[7])),
-        str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
+        # str(int(data_limits[7]*100))+'% Data [transferred net] GAN': os.path.join('surface_3d', 'shear', pretrained, 'GAN_'+train_routine+'_DS:'+str(data_limits[7])),
 
 # ===== 0.25 data  ===============================================
         # str(int(data_limits[3]*100))+'% Data No GAN': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:'+str(data_limits[3])),
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(8,6))
     i = 0
     if cols[i] == 'Downstream MAE':
-        ax.plot(range(0,251), [0.041]*251, label='Expected Error on Real Data')
+        ax.plot(range(0,251), [0.0412]*251, label='Expected Error on Real Data')
     for key in curves_to_plot.keys():
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     ax.set_title(cols[i])
     if cols[i] == 'Downstream MAE':
         ax.set_ylabel('Pose Estimation MAE')
-        ax.set_ylim(0.02, 0.3)
+        ax.set_ylim(0.02, 0.1)
         # ax.set_title('Downstream Task Performance')
     ax.legend()
     plt.show()

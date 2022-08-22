@@ -34,11 +34,11 @@ if __name__ == '__main__':
     data_type = 'shear'
     train_routine = 'LR:0.0002_decay:0.1_BS:64_DS:1.0'
     curves_to_plot = {
-        'Scratch': os.path.join('surface_3d', data_type, 'not_pretrained', 'GAN_'+train_routine),
-        # 'Edge Tap Transfer': os.path.join('surface_3d', data_type, 'pretrained_edge_tap', 'GAN_'+train_routine),
-        'Edge Shear Transfer': os.path.join('surface_3d', data_type, 'pretrained_edge_shear', 'GAN_'+train_routine),
-        'Surface Tap Transfer': os.path.join('surface_3d', data_type, 'pretrained_surface_tap', 'GAN_'+train_routine),
-        # 'Surface Shear Transfer': os.path.join('surface_3d', data_type, 'pretrained_surface_shear', 'GAN_'+train_routine),
+        'Scratch': os.path.join('edge_2d', data_type, 'not_pretrained', 'GAN_'+train_routine),
+        'Edge Tap Transfer': os.path.join('edge_2d', data_type, 'pretrained_edge_tap', 'GAN_'+train_routine),
+        # 'Edge Shear Transfer': os.path.join('edge_2d', data_type, 'pretrained_edge_shear', 'GAN_'+train_routine),
+        'Surface Tap Transfer': os.path.join('edge_2d', data_type, 'pretrained_surface_tap', 'GAN_'+train_routine),
+        # 'Surface Shear Transfer': os.path.join('edge_2d', data_type, 'pretrained_surface_shear', 'GAN_'+train_routine),
     }
 
     cols = ['mean training loss', 'val MSE', 'val_SSIM', 'Downstream MAE']
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(8,6))
     i = 0
     if cols[i] == 'Downstream MAE':
-        ax.plot(range(0,251), [0.0412]*251, label='Expected Error on Real Data')
+        ax.plot(range(0,251), [0.041]*251, label='Expected Error on Real Data')
     for key in curves_to_plot.keys():
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
@@ -60,10 +60,10 @@ if __name__ == '__main__':
             ax.fill_between(x, avg-std, avg+std, alpha=0.2, color=colour)
 
         ax.set_xlabel('Epoch')
-    ax.set_title(cols[i])
+    ax.set_title('Edge Shear')
     if cols[i] == 'Downstream MAE':
         ax.set_ylabel('Pose Estimation MAE')
-        ax.set_ylim(0.03, 0.1)
+        ax.set_ylim(0.02, 0.1)
         # ax.set_title('Downstream Task Performance')
     ax.legend()
     plt.show()

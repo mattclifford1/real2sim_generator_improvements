@@ -48,7 +48,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(8,6))
     i = 0
     if cols[i] == 'Downstream MAE':
-        ax.plot(range(0,251), [0.041]*251, label='Expected Error on Real Data')
+        ax.plot(range(0,251), [0.0412]*251, label='Expected Error on Real Data (Shear)')
+        ax.plot(range(0,251), [0.037]*251, label='Expected Error on Real Data (Tap)')
     for key in curves_to_plot.keys():
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
