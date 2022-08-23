@@ -3,6 +3,8 @@ import pandas as pd
 import os
 from argparse import ArgumentParser
 import numpy as np
+import sys; sys.path.append('..'); sys.path.append('.')
+from training_plots.plot_utils import get_avg_of_runs
 
 '''run with eg:
 $ python plotting/training_graphs_from_list.py --dir ~/Downloads/matt/
@@ -11,17 +13,6 @@ notes: surface_3d shear pose estimations MAES:
             - real   ->   0.041
             - sim    ->   0.026/ 0.021
 '''
-
-def get_avg_of_runs(dir, csv_file='training_stats.csv'):
-    Ys = []
-    for run in os.listdir(dir):
-        path = os.path.join(dir, run, csv_file)
-        df = pd.read_csv(path)
-        Ys.append(df[cols[i]].values[0:])
-    x = df['epoch'].values[0:]
-    Ys = np.array(Ys)
-    return x, np.mean(Ys, axis=0), np.std(Ys, axis=0)
-    # return x, df[cols[i]].values[1:], np.std(Ys, axis=0)
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Plot training graphs')
@@ -51,7 +42,7 @@ if __name__ == '__main__':
     for key in curves_to_plot.keys():
         dir = curves_to_plot[key]    # training run csv file of stats
         dir = os.path.join(ARGS.dir, dir)
-        x, avg, std = get_avg_of_runs(dir)
+        x, avg, std = get_avg_of_runs(dir, cols[i])
         p = ax.plot(x, avg, label=key)
         if ARGS.std == True:
             colour = p[0].get_color()
