@@ -2,6 +2,7 @@
 *.pth
 no_git_data
 pytests/models
+*.csv#
 
 # bc4 files
 /server/outputs
