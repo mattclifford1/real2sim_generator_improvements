@@ -17,3 +17,9 @@ sudo apt-get install texlive-full
 https://textext.github.io/textext/install/linux.html#for-systems-with-inkscape-installed-from-a-package-manager
 # unzip and install
 python3 setup.py
+
+
+
+
+# to use latex locally:
+https://towardsdatascience.com/setting-up-latex-on-your-atom-editor-7ea624571d50
