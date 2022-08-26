@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import os
 
 
+# dir = os.path.join('image_transformations', 'results_edge')
+# dir = os.path.join('image_transformations', 'results_surface')
 dir = os.path.join('image_transformations', 'results_surface_val')
 results = {}
 for file in os.listdir(dir):

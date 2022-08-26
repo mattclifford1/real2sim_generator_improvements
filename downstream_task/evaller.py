@@ -101,7 +101,7 @@ if __name__ == '__main__':
     domain = ['real', 'sim']
     posenets = list(itertools.product(task, sampling, domain))
 
-    results = {'run':[0, 1]}
+    results = {'run':[0]}
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
