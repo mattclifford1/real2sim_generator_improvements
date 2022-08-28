@@ -4,7 +4,7 @@ import os
 from argparse import ArgumentParser
 import numpy as np
 import sys; sys.path.append('..'); sys.path.append('.')
-from training_plots.plot_utils import get_avg_of_runs
+from training_plots.plot_utils import get_avg_of_runs, plot_runs
 
 '''run with eg:
 $ python plotting/training_graphs_from_list.py --dir ~/Downloads/matt/
@@ -35,26 +35,4 @@ if __name__ == '__main__':
     cols = ['mean training loss', 'val MSE', 'val_SSIM', 'Downstream MAE']
     cols = ['Downstream MAE']
 
-    fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(8,6))
-    i = 0
-    if cols[i] == 'Downstream MAE':
-        ax.plot(range(0,251), [0.041]*251, label='Expected Error on Real Data')
-    for key in curves_to_plot.keys():
-        dir = curves_to_plot[key]    # training run csv file of stats
-        dir = os.path.join(ARGS.dir, dir)
-        x, avg, std = get_avg_of_runs(dir)
-        p = ax.plot(x, avg, label=key)
-        if ARGS.std == True:
-            colour = p[0].get_color()
-            # ax.plot(x, avg+std, color=colour, alpha=0.7)
-            # ax.plot(x, avg-std, color=colour, alpha=0.7)
-            ax.fill_between(x, avg-std, avg+std, alpha=0.2, color=colour)
-
-        ax.set_xlabel('Epoch')
-    ax.set_title('Edge Shear')
-    if cols[i] == 'Downstream MAE':
-        ax.set_ylabel('Pose Estimation MAE')
-        ax.set_ylim(0.02, 0.1)
-        # ax.set_title('Downstream Task Performance')
-    ax.legend()
-    plt.show()
+    plot_runs(curves_to_plot, cols, ARGS.dir, ARGS.std)
