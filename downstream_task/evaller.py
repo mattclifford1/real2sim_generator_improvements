@@ -102,7 +102,7 @@ if __name__ == '__main__':
     domain = ['real']
     posenets = list(itertools.product(task, sampling, domain))
 
-    posenets = ('surface_3d', 'shear')
+    posenets = [('surface_3d', 'shear')]
     from gan_models.models_128 import GeneratorUNet, weights_init_pretrained
     generator = GeneratorUNet(in_channels=1, out_channels=1)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
