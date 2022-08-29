@@ -109,12 +109,13 @@ if __name__ == '__main__':
 
     results = {'run':[0]}
     results = {'run':[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
+    results = {'run':[0, 1, 2]}
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
             # e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
             gen_model = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+net[0]+']/128x128_['+net[1]+']_250epochs', 'checkpoints', 'best_generator.pth')
-            gen_model = os.path.join(ARGS.dir, 'models/sim2real/matt/'+net[0]+'/'+net[1], 'not_pretrained', 'GAN_LR:0.0002_decay:0.1_BS:64_DS:1.0', 'run_'+str(run), 'models', 'best_generator.pth')
+            gen_model = os.path.join(ARGS.dir, 'models/sim2real/matt/'+net[0]+'/'+net[1], 'not_pretrained', 'GAN_LR:0.0002_decay:0.1_BS:64_DS:1.0', 'run_'+str(run), 'models', 'final_generator.pth')
             weights_init_pretrained(generator, gen_model)
             generator = generator.to(device)
             generator.eval()
