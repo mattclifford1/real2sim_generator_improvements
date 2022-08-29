@@ -111,8 +111,10 @@ if __name__ == '__main__':
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
             # e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
-            gen_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+net[0]+']/128x128_['+net[1]+']_250epochs', 'checkpoints', 'best_discriminator.pth')
-            weights_init_pretrained(generator, gen_model_dir)
+            gen_model = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+net[0]+']/128x128_['+net[1]+']_250epochs', 'checkpoints', 'best_generator.pth')
+            weights_init_pretrained(generator, gen_model)
+            generator = generator.to(device)
+            generator.eval()
 
             e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=('surface_3d', 'shear', 'real'), run=run)
             mae = e.get_MAE(generator)
