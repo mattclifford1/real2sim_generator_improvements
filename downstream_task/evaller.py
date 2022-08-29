@@ -116,7 +116,7 @@ if __name__ == '__main__':
             generator = generator.to(device)
             generator.eval()
 
-            e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=('surface_3d', 'shear', 'real'), run=run)
+            e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=('surface_3d', 'shear', 'sim'), run=run)
             mae = e.get_MAE(generator)
             results[str(net)].append(mae)
 
