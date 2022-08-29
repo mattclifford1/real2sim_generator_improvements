@@ -98,16 +98,24 @@ if __name__ == '__main__':
     import pandas as pd
     task = ['edge_2d','surface_3d']
     sampling = ['tap', 'shear']
-    domain = ['real', 'sim']
+    # domain = ['real', 'sim']
+    domain = ['real']
     posenets = list(itertools.product(task, sampling, domain))
+
+    from gan_models.models_128 import GeneratorUNet, weights_init_pretrained
+    generator = GeneratorUNet(in_channels=1, out_channels=1)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     results = {'run':[0]}
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
             # e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
-            e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=net, run=run)
-            mae = e.get_MAE()
+            gen_model_dir = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+net[0]+']/128x128_['+net[1]+']_250epochs', 'checkpoints', 'best_discriminator.pth')
+            weights_init_pretrained(generator, gen_model_dir)
+
+            e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=('surface_3d', 'shear', 'real'), run=run)
+            mae = e.get_MAE(generator)
             results[str(net)].append(mae)
 
         df = pd.DataFrame.from_dict(results)
