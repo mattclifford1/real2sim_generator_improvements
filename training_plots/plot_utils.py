@@ -12,6 +12,12 @@ def get_avg_of_runs(dir, col_to_get='Downstream MAE', csv_file='training_stats.c
             Ys.append(df[col_to_get].values[0:])
             x = df['epoch'].values[0:]
     Ys = np.array(Ys)
+
+    print('lowest all : ', col_to_get, np.min(Ys, axis=1).min())
+    print('highest all: ', col_to_get, np.min(Ys, axis=1).max())
+    print('lowest mean: ', col_to_get, np.mean(Ys, axis=0).min())
+    print('lowest std : ', col_to_get, np.min(Ys, axis=1).std())
+
     return x, np.mean(Ys, axis=0), np.std(Ys, axis=0)
 
 

@@ -102,16 +102,19 @@ if __name__ == '__main__':
     domain = ['real']
     posenets = list(itertools.product(task, sampling, domain))
 
+    posenets = ('surface_3d', 'shear')
     from gan_models.models_128 import GeneratorUNet, weights_init_pretrained
     generator = GeneratorUNet(in_channels=1, out_channels=1)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     results = {'run':[0]}
+    results = {'run':[0, 1, 2]}
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
             # e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
             gen_model = os.path.join(ARGS.dir, 'models/sim2real/alex/trained_gans/['+net[0]+']/128x128_['+net[1]+']_250epochs', 'checkpoints', 'best_generator.pth')
+            gen_model = os.path.join(ARGS.dir, 'models/sim2real/matt/'+net[0]+'/'+net[1], 'not_pretrained', 'GAN_LR:0.0002_decay:0.1_BS:64_DS:1.0', 'models', 'best_generator.pth')
             weights_init_pretrained(generator, gen_model)
             generator = generator.to(device)
             generator.eval()
@@ -122,4 +125,4 @@ if __name__ == '__main__':
 
         df = pd.DataFrame.from_dict(results)
         # df.to_csv('downstream_task/validation_results.csv')
-        df.to_csv('downstream_task/validation_results_on_surface_shear_real_data.csv')
+        df.to_csv('downstream_task/validation_results_diff_runs.csv')
