@@ -105,9 +105,11 @@ if __name__ == '__main__':
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
-            e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
+            # e = evaller(ARGS.dir, data_task=net, model_task=net, run=run)
+            e = evaller(ARGS.dir, data_task=('surface_3d', 'shear', 'real'), model_task=net, run=run)
             mae = e.get_MAE()
             results[str(net)].append(mae)
 
         df = pd.DataFrame.from_dict(results)
-        df.to_csv('downstream_task/validation_results.csv')
+        # df.to_csv('downstream_task/validation_results.csv')
+        df.to_csv('downstream_task/validation_results_on_surface_shear_real_data.csv')
