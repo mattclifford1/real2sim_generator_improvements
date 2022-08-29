@@ -108,7 +108,7 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     results = {'run':[0]}
-    results = {'run':[0, 1, 2]}
+    results = {'run':[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
     for net in tqdm(posenets, desc='posenets'):
         results[str(net)] = []
         for run in tqdm(results['run'], desc='runs', leave=False):
