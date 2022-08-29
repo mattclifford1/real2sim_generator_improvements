@@ -10,7 +10,7 @@ from training_plots.plot_utils import get_avg_of_runs, plot_runs
 if __name__ == '__main__':
     parser = ArgumentParser(description='Plot training graphs')
     # parser.add_argument("--dir", default=os.path.join(os.path.expanduser('~'), 'summer-project', 'models', 'sim2real', 'matt'), help='path to folder where training graphs are within')
-    parser.add_argument("--dir", default=os.path.join('gan_models', 'training_stats-data_reduce'), help='path to folder where training graphs are within')
+    parser.add_argument("--dir", default=os.path.join('gan_models', 'training_csvs'), help='path to folder where training graphs are within')
     parser.add_argument("--std", default=True, action='store_false', help='plot standard deviation of all runs')
     ARGS = parser.parse_args()
 
@@ -25,4 +25,3 @@ if __name__ == '__main__':
     cols = ['mean training loss', 'val_SSIM', 'Downstream MAE']
     # cols = ['Downstream MAE']
     plot_runs(curves_to_plot, cols, ARGS.dir, ARGS.std)
-    
