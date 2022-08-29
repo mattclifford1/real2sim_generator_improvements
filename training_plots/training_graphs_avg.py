@@ -25,6 +25,7 @@ if __name__ == '__main__':
     # define the  label:filepath   to plot
     pretrained_1 = 'pretrained_edge_tap'
     pretrained_2 = 'pretrained_edge_shear'
+    pretrained_3 = 'pretrained_surface_tap'
     train_routine = 'LR:0.0002_decay:0.1_BS:64'
     loss_type = 'no_gan'
     loss_type = 'GAN_'
@@ -34,10 +35,10 @@ if __name__ == '__main__':
         ## ones to plot
         str(int(data_limits[7]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', loss_type+train_routine+'_DS:'+str(data_limits[7])),
         str(int(data_limits[2]*100))+'% Data [transferred edge shear]': os.path.join('surface_3d', 'shear', pretrained_2, loss_type+train_routine+'_DS:'+str(data_limits[2])),
-        str(int(data_limits[2]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', loss_type+train_routine+'_DS:'+str(data_limits[2])),
         # str(int(data_limits[2]*100))+'% Data [transferred edge tap]': os.path.join('surface_3d', 'shear', pretrained_1, loss_type+train_routine+'_DS:'+str(data_limits[2])),
+        # str(int(data_limits[2]*100))+'% Data [transferred surface tap]': os.path.join('surface_3d', 'shear', pretrained_3, loss_type+train_routine+'_DS:'+str(data_limits[7])),
+        str(int(data_limits[2]*100))+'% Data': os.path.join('surface_3d', 'shear', 'not_pretrained', loss_type+train_routine+'_DS:'+str(data_limits[2])),
         #
-        # str(int(data_limits[7]*100))+'% Data [transferred net]': os.path.join('surface_3d', 'shear', pretrained, loss_type+train_routine+'_DS:'+str(data_limits[7])),
     }
 
     cols = ['mean training loss', 'val MSE', 'val_SSIM', 'Downstream MAE']
