@@ -15,11 +15,10 @@ if __name__ == '__main__':
     ARGS = parser.parse_args()
 
     # define the  label:filepath   to plot
-    pretrained = 'pretrained_edge_tap'
     train_routine = 'LR:0.0002_decay:0.1_BS:64'
 
     curves_to_plot = {
-        'Surface 3D shear trained from scratch': os.path.join('surface_3d', 'shear', 'not_pretrained', 'no_gan'+train_routine+'_DS:1.0')
+        'Surface 3D shear trained from scratch': os.path.join('surface_3d', 'shear', 'not_pretrained', 'GAN_'+train_routine+'_DS:1.0')
     }
 
     cols = ['mean training loss', 'val MSE', 'val_SSIM', 'Downstream MAE']
