@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import os
 
 
-# dir = os.path.join('image_transformations', 'results_edge')
+dir = os.path.join('image_transformations', 'results_edge')
 # dir = os.path.join('image_transformations', 'results_surface')
-dir = os.path.join('image_transformations', 'results_surface_val')
+# dir = os.path.join('image_transformations', 'results_surface_val')
 results = {}
 for file in os.listdir(dir):
     if os.path.splitext(file)[1] == '.csv':
@@ -28,5 +28,18 @@ for key, col in zip(results.keys(), axs.reshape(-1)):
         col.legend(loc='upper left')
     else:
         col.legend(loc='upper right')
+    if key == 'brightness':
+        col.set_xlabel('Global Brightness Adjustment')
+    elif key == 'blur':
+        col.set_xlabel('Gaussian Blur (Kernel Size)')
+    elif key == 'x_shift':
+        col.set_xlabel('X Translation (Proportion of image)')
+    elif key == 'y_shift':
+        col.set_xlabel('Y Translation (Proportion of image)')
+    elif key == 'zoom':
+        col.set_xlabel('Scaling (Zoom factor)')
+    elif key == 'rotation':
+        col.set_xlabel('Rotation around Centre (Degrees)')
     # col.set_ylabel('Metrics')
+plt.tight_layout()
 plt.show()

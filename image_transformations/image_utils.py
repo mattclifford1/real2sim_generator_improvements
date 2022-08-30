@@ -55,9 +55,6 @@ def transform_image(image, params_dict={}):
     if 'rotation' in params_dict.keys():
         image = rotate(image, params_dict['rotation'])
 
-    if 'brightness' in params_dict.keys():
-        image = np.clip(image + params_dict['brightness'], 0, 1)
-
     if 'blur' in params_dict.keys():
         if params_dict['blur'] > 0:
             blur_odd = (int(params_dict['blur']/2)*2) + 1    # need to make kernel size odd
@@ -74,6 +71,10 @@ def transform_image(image, params_dict={}):
         image = translate_image(image, params_dict['x_shift'], 0)
     elif 'y_shift' in params_dict.keys():
         image = translate_image(image, 0, params_dict['y_shift'])
+
+
+    if 'brightness' in params_dict.keys():
+        image = np.clip(image + params_dict['brightness'], 0, 1)
 
     return image
 

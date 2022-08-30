@@ -101,10 +101,10 @@ class make_app(QMainWindow):
         '''images'''
         # set up layout of images
         self.im_pair_names = [
-                              ('Xr', 'T(Xr)'),
+                              # ('Xr', 'T(Xr)'),
                               ('Xs', 'T(Xs)'),
-                              ('G(Xr)', 'T(G(Xr))'),
-                              ('G(T(Xr))', 'T(G(Xr))_'),
+                              # ('G(Xr)', 'T(G(Xr))'),
+                              # ('G(T(Xr))', 'T(G(Xr))_'),
                               ]
         # widget dictionary store
         self.widgets = {'button': {}, 'slider': {}, 'checkbox': {}, 'label': {}, 'image':{}}
