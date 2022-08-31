@@ -21,8 +21,9 @@ def get_avg_of_runs(dir, col_to_get='Downstream MAE', csv_file='training_stats.c
     return x, np.mean(Ys, axis=0), np.std(Ys, axis=0)
 
 
-def plot_single(i, ax, curves_to_plot, cols, base_dir, plot_std=False):
-    colours = ["#9b59b6", "#3498db", "#e74c3c", "#34495e", "#2ecc71", "#95a5a6"]
+def plot_single(i, ax, curves_to_plot, cols, base_dir, plot_std=False, colours=None):
+    if colours == None:
+        colours = ["#9b59b6", "#3498db", "#e74c3c", "#34495e", "#2ecc71", "#95a5a6"]
     colour_num = 0
     if cols[i] == 'Downstream MAE':
         ax.plot(range(0,251), [0.0412]*251, label='Expected Error on Real Data', color=colours[colour_num])
@@ -63,6 +64,10 @@ def plot_single(i, ax, curves_to_plot, cols, base_dir, plot_std=False):
         ax.set_ylabel('Loss')
     ax.legend()
 
+def plot_on_ax(ax, curves_to_plot, cols, base_dir, plot_std=False, colours=None):
+    plot_single(0, ax, curves_to_plot, cols, base_dir, plot_std, colours)
+
+
 
 def plot_runs(curves_to_plot, cols, base_dir, plot_std=False):
     if len(cols) == 1:  # can't iterate over one plot
@@ -70,7 +75,7 @@ def plot_runs(curves_to_plot, cols, base_dir, plot_std=False):
         i = 0
         plot_single(i, ax, curves_to_plot, cols, base_dir, plot_std)
     else:
-        fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(13,4))
+        fig, ax = plt.subplots(nrows=1, ncols=len(cols), figsize=(13,5))
         for i, col in enumerate(ax):
             plot_single(i, col, curves_to_plot, cols, base_dir, plot_std)
     plt.tight_layout()
