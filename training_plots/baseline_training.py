@@ -25,3 +25,4 @@ if __name__ == '__main__':
     cols = ['mean training loss', 'val_SSIM', 'Downstream MAE']
     # cols = ['Downstream MAE']
     plot_runs(curves_to_plot, cols, ARGS.dir, ARGS.std)
+    
