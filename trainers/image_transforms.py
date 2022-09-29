@@ -257,3 +257,39 @@ def transform_matrix_offset_center(matrix, x, y):
     reset_matrix = np.array([[1, 0, -o_x], [0, 1, -o_y], [0, 0, 1]])
     transform_matrix = np.dot(np.dot(offset_matrix, matrix), reset_matrix)
     return transform_matrix
+
+
+if __name__ == '__main__':
+    import os
+    edge_im_dir = os.path.join('..', 'data', 'Bourne', 'tactip', 'real', 'edge_2d', 'tap', 'csv_train', 'images')
+    surface_im_dir = os.path.join('..', 'data', 'Bourne', 'tactip', 'real', 'surface_3d', 'tap', 'csv_train', 'images')
+
+    ims = {
+        'no_contact': os.path.join(edge_im_dir, 'image_25.png'),
+        'edge': os.path.join(edge_im_dir, 'image_4081.png'),
+        'surface': os.path.join(surface_im_dir, 'image_8.png'),
+    }
+
+    im_params = {
+              'size':        (256, 256),
+              'rshift':      None,
+              'rzoom':       None,  # (0.98, 1),
+              'thresh':      True,
+              'brightlims':  None,  # [0.3, 1.0, -50, 50], # alpha limits for contrast, beta limits for brightness
+              'noise_var':   None,  # 0.001,
+              'stdiz':       False,
+              'normlz':      True,
+              'joint_aug':   False,
+              'bbox':        [80,25,530,475],    #[100,  0, 580, 480] digitac
+              'gray':        True,
+              'add_axis':    False
+              }
+
+    for im in ims.keys():
+        im_file = ims[im]
+        im_raw = cv2.imread(im_file)
+        im_processed = process_image(im_raw, im_params)
+
+        save_file = os.path.join(os.path.expanduser('~'), 'Downloads', 'tactip_ims', im + '.png')
+        print(save_file)
+        cv2.imwrite(save_file, im_processed*255)
