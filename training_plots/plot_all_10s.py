@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
     colours = [None, None, ["#9b59b6", "#3498db", "#e74c3c", "#2ecc71", "#95a5a6"], None]
 
-    titles = ['Transfer from Edge Shear', 'Transfer from Edge Tap', 'No Transfer (Scratch)', 'Transfer from Surface Tap']
+    titles = ['Transfer from Edge Tap', 'Transfer from Edge Shear', 'No Transfer (Scratch)', 'Transfer from Surface Tap']
 
     fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10,8))
     c = 0
