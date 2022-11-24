@@ -4,29 +4,56 @@ generic image and metric data class constructor
 # Author: Matt Clifford <matt.clifford@bristol.ac.uk>
 import os
 import numpy as np
+import pandas as pd
+
+import sys; sys.path.append('..'); sys.path.append('.')
+import image_utils
+import networks
+# import metrics
 
 '''
 extension of data_holder that allows to iterate through a dataset
 '''
 class dataset_holder:
-    def __init__(self, image_list: list, # list of image file names
-                       image_loader,     # function to load image files
+    def __init__(self, data_set_csv,
                        metrics: dict,
-                       metric_images: dict):
-        self.image_list = image_list
-        self.image_loader = image_loader
+                       metric_images: dict,
+                       pose_path=os.path.join(os.path.expanduser('~'), 'summer-project/models/pose_estimation/surface_3d/shear/sim_LR:0.0001_BS:16/run_0/checkpoints/best_model.pth'),
+                       sim=True):
+        self.df = pd.read_csv(data_set_csv)
+        self.sim = sim
+        if self.sim:
+            self.im_dir = os.path.join(os.path.dirname(data_set_csv), 'images')
+        else:
+            self.im_dir = os.path.join(os.path.dirname(image_utils.get_real_csv_given_sim(data_set_csv)), 'images')
         self._load_image_data(0)   # load the first image
         self.metrics = metrics
+        self.metrics['pose_error'] = self._get_pose_error
         self.metric_images = metric_images
         self._check_inputs()
+        self.pose_esimator_sim = networks.pose_estimation(pose_path, sim=self.sim)
 
     def _load_image_data(self, i):
-        current_file = self.image_list[i]
-        self.image_name = os.path.splitext(os.path.basename(current_file))[0]
-        self.image_data = self.image_loader(current_file)
+        image = self.df.iloc[i]['sensor_image']
+        image_path = os.path.join(self.im_dir, image)
+        self.image_name = os.path.splitext(os.path.basename(image_path))[0]
+        if self.sim:
+            raw_image_data = image_utils.load_image(image_path)
+            self.image_data = image_utils.process_im(raw_image_data, data_type='sim')
+        else:
+            raw_image_data = image_utils.load_and_crop_raw_real(image_path)
+            self.image_data = image_utils.process_im(raw_image_data, data_type='real')
+
+        self._load_pose_data(i)
+
+    def _load_pose_data(self, i):
+        poses = ['pose_'+str(i) for i in range(1,7)]
+        self.pose_data = {}
+        for pose in poses:
+            self.pose_data[pose] = self.df.iloc[i][pose]
 
     def __len__(self):
-        return len(self.image_list)
+        return len(self.df)
 
     def __getitem__(self, i):
         self._load_image_data(i)
@@ -36,6 +63,11 @@ class dataset_holder:
         for metric in self.metrics.keys():
             results[metric] = self.metrics[metric](self.image_data, transformed_image)
         return results
+
+    def _get_pose_error(self, im, transformed_image):
+        pose_error_results_dict = self.pose_esimator_sim.get_error(transformed_image, self.pose_data)
+        mae = pose_error_results_dict['MAE'][0]
+        return mae
 
     def get_metric_images(self, transformed_image):
         results = {}

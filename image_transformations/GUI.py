@@ -101,7 +101,7 @@ class make_app(QMainWindow):
         '''images'''
         # set up layout of images
         self.im_pair_names = [
-                              # ('Xr', 'T(Xr)'),
+                              ('Xr', 'T(Xr)'),
                               ('Xs', 'T(Xs)'),
                               # ('G(Xr)', 'T(G(Xr))'),
                               # ('G(T(Xr))', 'T(G(Xr))_'),
@@ -332,6 +332,7 @@ class make_app(QMainWindow):
 
     def load_real_image(self):
         image_path = os.path.join(self.im_real_dir, self.df.iloc[self.im_num]['sensor_image'])
+        print(image_path)
         self.sensor_data['im_raw'] = image_utils.load_and_crop_raw_real(image_path)
 
         self.sensor_data['Xr'] = image_utils.process_im(self.sensor_data['im_raw'], data_type='real')
