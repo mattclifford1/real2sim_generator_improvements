@@ -36,13 +36,15 @@ class dataset_holder:
     def _load_image_data(self, i):
         image = self.df.iloc[i]['sensor_image']
         image_path = os.path.join(self.im_dir, image)
-        self.image_name = os.path.splitext(os.path.basename(image_path))[0]
+        image_name = os.path.splitext(os.path.basename(image_path))[0]
         if self.sim:
             raw_image_data = image_utils.load_image(image_path)
-            self.image_data = image_utils.process_im(raw_image_data, data_type='sim')
+            self.image_reference = (image_name, image_utils.process_im(raw_image_data, data_type='sim'))
+            self.image_to_transform = self.image_reference
         else:
             raw_image_data = image_utils.load_and_crop_raw_real(image_path)
-            self.image_data = image_utils.process_im(raw_image_data, data_type='real')
+            self.image_reference = (image_name, image_utils.process_im(raw_image_data, data_type='real'))
+            self.image_to_transform = self.image_reference
 
         self._load_pose_data(i)
 
@@ -58,10 +60,22 @@ class dataset_holder:
     def __getitem__(self, i):
         self._load_image_data(i)
 
+    def get_reference_image_name(self):
+        return self.image_reference[0]
+
+    def get_reference_image(self):
+        return self.image_reference[1]
+
+    def get_transform_image_name(self):
+        return self.image_to_transform[0]
+
+    def get_transform_image(self):
+        return self.image_to_transform[1]
+
     def get_metrics(self, transformed_image):
         results = {}
         for metric in self.metrics.keys():
-            results[metric] = self.metrics[metric](self.image_data, transformed_image)
+            results[metric] = self.metrics[metric](self.get_reference_image(), transformed_image)
         return results
 
     def _get_pose_error(self, im, transformed_image):
@@ -72,12 +86,14 @@ class dataset_holder:
     def get_metric_images(self, transformed_image):
         results = {}
         for metric in self.metric_images.keys():
-            results[metric] = self.metric_images[metric](self.image_data, transformed_image)
+            results[metric] = self.metric_images[metric](self.get_reference_image(), transformed_image)
         return results
 
     def _check_inputs(self):
-        input_types = [(self.image_name, str),
-                       (self.image_data, np.ndarray),
+        input_types = [(self.image_reference[0], str),
+                       (self.image_reference[1], np.ndarray),
+                       (self.image_to_transform[0], str),
+                       (self.image_to_transform[1], np.ndarray),
                        (self.metrics, dict),
                        (self.metric_images, dict)]
         for item in input_types:
