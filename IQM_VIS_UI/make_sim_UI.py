@@ -30,15 +30,21 @@ def run():
                'rotation':{'min':-180, 'max':180, 'function':IQM_VIS.transforms.rotation},    # normal input
                'blur':{'min':1, 'max':41, 'normalise':'odd', 'function':IQM_VIS.transforms.blur},  # only odd ints
                'brightness':{'min':-1.0, 'max':1.0, 'function':IQM_VIS.transforms.brightness},   # normal but with float
-               'zoom':{'min':0.1, 'max':4.0, 'function':image_utils.zoom_image, 'init_value': 1, 'num_values':21},  # requires non standard slider params
                'x_shift':{'min':-1.0, 'max':1.0, 'function':image_utils.translate_x},
                'y_shift':{'min':-1.0, 'max':1.0, 'function':image_utils.translate_y},
+               'zoom':    {'min': 0.8, 'max':1.2, 'function':IQM_VIS.transforms.zoom_image, 'init_value': 1.0, 'num_values':21},  # requires non standard slider params
                }
+    # define any parameters that the metrics need (names shared across both metrics and metric_images)
+    ssim_params = {'sigma': {'min':0.25, 'max':5.25, 'init_value': 1.5},  # for the guassian kernel
+                   # 'kernel_size': {'min':1, 'max':41, 'normalise':'odd', 'init_value': 11},  # ignored if guassian kernel used
+                   'k1': {'min':0.01, 'max':0.21, 'init_value': 0.01},
+                   'k2': {'min':0.01, 'max':0.21, 'init_value': 0.03}}
 
     # use the API to create the UI
     IQM_VIS.make_UI(data,
                 transformations,
-                metrics_avg_graph=True)
+                metrics_avg_graph=True,
+                metric_params=ssim_params)
 
 
 if __name__ == '__main__':

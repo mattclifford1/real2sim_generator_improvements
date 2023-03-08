@@ -72,21 +72,21 @@ class dataset_holder:
     def get_transform_image(self):
         return self.image_to_transform[1]
 
-    def get_metrics(self, transformed_image):
+    def get_metrics(self, transformed_image, **kwargs):
         results = {}
-        for metric in self.metrics.keys():
-            results[metric] = self.metrics[metric](self.get_reference_image(), transformed_image)
+        for metric in self.metrics:
+            results[metric] = self.metrics[metric](self.get_reference_image(), transformed_image, **kwargs)
         return results
 
-    def _get_pose_error(self, im, transformed_image):
+    def _get_pose_error(self, im, transformed_image, **kwargs):
         pose_error_results_dict = self.pose_esimator_sim.get_error(transformed_image, self.pose_data)
         mae = pose_error_results_dict['MAE'][0]
         return mae
 
-    def get_metric_images(self, transformed_image):
+    def get_metric_images(self, transformed_image, **kwargs):
         results = {}
-        for metric in self.metric_images.keys():
-            results[metric] = self.metric_images[metric](self.get_reference_image(), transformed_image)
+        for metric in self.metric_images:
+            results[metric] = self.metric_images[metric](self.get_reference_image(), transformed_image, **kwargs)
         return results
 
     def _check_inputs(self):
